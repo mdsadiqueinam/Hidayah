@@ -9,9 +9,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import io.github.mdsadiqueinam.hidayah.ui.screens.AppSettingsScreen
-import io.github.mdsadiqueinam.hidayah.ui.screens.ReportScreen
-import io.github.mdsadiqueinam.hidayah.ui.screens.SettingsScreen
+import io.github.mdsadiqueinam.hidayah.ui.screens.appsettings.AppSettingsScreen
+import io.github.mdsadiqueinam.hidayah.ui.screens.report.ReportScreen
+import io.github.mdsadiqueinam.hidayah.ui.screens.settings.SettingsScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.home.HomeScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.home.HomeViewModel
 

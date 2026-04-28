@@ -1,77 +1,27 @@
-package io.github.mdsadiqueinam.hidayah.ui.screens
+package io.github.mdsadiqueinam.hidayah.ui.screens.appsettings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.mdsadiqueinam.hidayah.data.AppRepository
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-data class AppSettingsUiState(
-    val app: ControlledApp? = null,
-    val onDailyLimitChange: (Int) -> Unit = {},
-    val onOpenDelayChange: (Int) -> Unit = {},
-    val onSessionLimitChange: (Int) -> Unit = {},
-    val onHardLockToggle: (Boolean) -> Unit = {}
-)
-
-@HiltViewModel
-class AppSettingsViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    private val repository: AppRepository
-) : ViewModel() {
-    val packageName: String = checkNotNull(savedStateHandle["packageName"])
-
-    private val _uiState = MutableStateFlow(AppSettingsUiState())
-    val uiState: StateFlow<AppSettingsUiState> = _uiState.asStateFlow()
-
-    init {
-        loadAppData()
-    }
-
-    private fun loadAppData() {
-        viewModelScope.launch {
-            val app = repository.getControlledApp(packageName)
-            _uiState.update { state ->
-                state.copy(
-                    app = app,
-                    onDailyLimitChange = { limit -> updateApp { it.copy(dailyLimit = limit) } },
-                    onOpenDelayChange = { delay -> updateApp { it.copy(openDelay = delay) } },
-                    onSessionLimitChange = { limit -> updateApp { it.copy(sessionLimit = limit) } },
-                    onHardLockToggle = { locked -> updateApp { it.copy(isHardLocked = locked) } }
-                )
-            }
-        }
-    }
-
-    private fun updateApp(update: (ControlledApp) -> ControlledApp) {
-        val currentApp = _uiState.value.app ?: return
-        val updatedApp = update(currentApp)
-        _uiState.update { it.copy(app = updatedApp) }
-        viewModelScope.launch {
-            repository.updateControlledApp(updatedApp)
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +38,7 @@ fun AppSettingsScreen(
                 title = { Text("App Settings") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -112,6 +62,7 @@ fun AppSettingsScreen(
                     SettingsGridCard(
                         title = "Daily Limits",
                         description = "How many times this app can be opened in a day",
+                        icon = Icons.Default.Schedule,
                         options = listOf(0, 1, 2, 3, 4, 5, 6),
                         labels = listOf("No Limit", "1 time", "2 times", "3 times", "4 times", "5 times", "6 times"),
                         selectedOption = app.dailyLimit,
@@ -123,6 +74,7 @@ fun AppSettingsScreen(
                     SettingsGridCard(
                         title = "Open Delay",
                         description = "Wait time before app opens",
+                        icon = Icons.Default.HourglassEmpty,
                         options = listOf(0, 10, 20, 30, 40, 50, 60),
                         labels = listOf("0s", "10s", "20s", "30s", "40s", "50s", "1m"),
                         selectedOption = app.openDelay,
@@ -134,6 +86,7 @@ fun AppSettingsScreen(
                     SettingsGridCard(
                         title = "Session Limit",
                         description = "Maximum duration for a single session",
+                        icon = Icons.Default.Timer,
                         options = listOf(0, 1, 2, 5, 10, 15, 30, 45, 60, 120, 180),
                         labels = listOf("No Limit", "1m", "2m", "5m", "10m", "15m", "30m", "45m", "1h", "2h", "3h"),
                         selectedOption = app.sessionLimit,
@@ -197,6 +150,7 @@ fun AppIdentityCard(app: ControlledApp) {
 fun <T> SettingsGridCard(
     title: String,
     description: String,
+    icon: ImageVector,
     options: List<T>,
     labels: List<String>,
     selectedOption: T,
@@ -207,8 +161,22 @@ fun <T> SettingsGridCard(
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            }
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
             Spacer(Modifier.height(16.dp))
             
             // Grid of buttons
@@ -249,6 +217,13 @@ fun HardLockCard(isLocked: Boolean, onToggle: (Boolean) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = null,
+                tint = if (isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text("Hard Lock", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text("Completely block this app", style = MaterialTheme.typography.bodyMedium)
