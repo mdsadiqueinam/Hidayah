@@ -1,8 +1,8 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.AppItem
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class AppSelectionUiState(
     val searchQuery: String = "",
@@ -22,8 +23,10 @@ data class AppSelectionUiState(
     val onSave: (Set<String>) -> Unit = {}
 )
 
-class AppSelectionViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = AppRepository(application)
+@HiltViewModel
+class AppSelectionViewModel @Inject constructor(
+    private val repository: AppRepository
+) : ViewModel() {
     private var allApps: List<AppItem> = emptyList()
 
     private val _uiState = MutableStateFlow(

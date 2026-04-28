@@ -14,8 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,6 +40,7 @@ import androidx.core.graphics.drawable.toBitmap
 @Composable
 fun ControlledAppSection(
     uiState: HomeUiState,
+    onNavigateToAppSettings: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -72,11 +78,16 @@ fun ControlledAppSection(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
         } else {
-            uiState.controlledApps.forEach { app ->
-                SavedAppRow(
-                    appName = app.appName,
-                    packageName = app.packageName
-                )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(uiState.controlledApps) { app ->
+                    SavedAppCard(
+                        appName = app.appName,
+                        packageName = app.packageName,
+                        onSettingsClick = { onNavigateToAppSettings(app.packageName) }
+                    )
+                }
             }
         }
 
@@ -89,9 +100,10 @@ fun ControlledAppSection(
 }
 
 @Composable
-fun SavedAppRow(
+fun SavedAppCard(
     appName: String,
-    packageName: String
+    packageName: String,
+    onSettingsClick: () -> Unit
 ) {
     val context = LocalContext.current
     val packageManager = context.packageManager
@@ -104,31 +116,54 @@ fun SavedAppRow(
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        if (icon != null) {
-            Image(
-                bitmap = icon,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp)
-            )
-        } else {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.small
-            ) {}
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                Image(
+                    bitmap = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp)
+                )
+            } else {
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = MaterialTheme.shapes.small
+                ) {}
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = appName,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Usage: 0h 0m | Attempts: 0",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
-        
-        Spacer(modifier = Modifier.width(16.dp))
-        
-        Text(
-            text = appName,
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }

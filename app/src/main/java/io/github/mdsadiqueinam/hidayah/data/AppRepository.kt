@@ -4,11 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class AppRepository(private val context: Context) {
-    private val database = AppDatabase.getDatabase(context)
-    private val controlledAppDao = database.controlledAppDao()
-
+class AppRepository @Inject constructor(
+    private val context: Context,
+    private val controlledAppDao: ControlledAppDao
+) {
     fun getInstalledApps(): List<AppItem> {
         val packageManager = context.packageManager
         val intent = Intent(Intent.ACTION_MAIN, null).apply {

@@ -25,6 +25,9 @@ import io.github.mdsadiqueinam.hidayah.ui.navigation.NavGraph
 import io.github.mdsadiqueinam.hidayah.ui.navigation.Screen
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +62,7 @@ fun MainScreen() {
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Report -> Icons.Default.Info
                                     Screen.Settings -> Icons.Default.Settings
+                                    else -> TODO("Not yet implemented")
                                 },
                                 contentDescription = null
                             )

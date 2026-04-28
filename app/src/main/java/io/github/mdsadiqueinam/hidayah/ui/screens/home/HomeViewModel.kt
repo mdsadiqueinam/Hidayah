@@ -1,8 +1,8 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class HomeUiState(
     val title: String = "Controlled Apps",
@@ -17,8 +18,10 @@ data class HomeUiState(
     val onAddClick: () -> Unit = {}
 )
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = AppRepository(application)
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: AppRepository
+) : ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
