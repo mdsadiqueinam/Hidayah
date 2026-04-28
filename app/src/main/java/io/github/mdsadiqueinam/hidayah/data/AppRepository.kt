@@ -31,9 +31,17 @@ class AppRepository @Inject constructor(
         return controlledAppDao.getAllControlledApps()
     }
 
+    suspend fun getControlledApp(packageName: String): ControlledApp? {
+        return controlledAppDao.getControlledApp(packageName)
+    }
+
     suspend fun saveControlledApps(apps: List<ControlledApp>) {
         controlledAppDao.deleteAll()
         controlledAppDao.insertAll(apps)
+    }
+
+    suspend fun updateControlledApp(app: ControlledApp) {
+        controlledAppDao.update(app)
     }
 
     suspend fun getControlledPackageNames(): List<String> {
