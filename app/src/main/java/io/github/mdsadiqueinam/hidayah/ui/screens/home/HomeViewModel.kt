@@ -133,8 +133,27 @@ class HomeViewModel @Inject constructor(
         }
 
         val totalTimeMs = filteredStats.values.sumOf { it.totalTimeInForeground }
+        val totalTimeHours = totalTimeMs.toDouble() / (1000 * 60 * 60)
         
-        // Calculate percentage of day passed
+        val status = if (category == ScreenTimeCategory.TOTAL) {
+            when {
+                totalTimeHours < 2 -> "Excellence"
+                totalTimeHours < 3 -> "Good"
+                totalTimeHours < 4 -> "Moderate"
+                totalTimeHours < 5 -> "High"
+                else -> "Very High"
+            }
+        } else {
+            when {
+                totalTimeHours < 1 -> "Excellence"
+                totalTimeHours < 2 -> "Good"
+                totalTimeHours < 3 -> "Moderate"
+                totalTimeHours < 4 -> "High"
+                else -> "Very High"
+            }
+        }
+
+        // Calculate percentage of day passed for display info (optional, keeping it for now if UI needs it)
         val calendar = Calendar.getInstance()
         val now = calendar.timeInMillis
         calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -145,13 +164,6 @@ class HomeViewModel @Inject constructor(
         val dayPassedMs = now - dayStart
         
         val percentage = if (dayPassedMs > 0) (totalTimeMs * 100 / dayPassedMs).toInt() else 0
-        
-        val status = when {
-            percentage < 5 -> "Excellent"
-            percentage < 10 -> "Good"
-            percentage < 20 -> "Moderate"
-            else -> "Bad"
-        }
 
         // Get app names for top apps
         val appNameMap = repository.getInstalledApps().associate { it.packageName to it.appName }

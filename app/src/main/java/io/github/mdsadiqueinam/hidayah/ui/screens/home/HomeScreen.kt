@@ -192,13 +192,83 @@ fun PauseProtectionCard(uiState: HomeUiState) {
 @Composable
 fun ScreenTimeCard(uiState: HomeUiState) {
     var expanded by remember { mutableStateOf(false) }
+    var showInfoDialog by remember { mutableStateOf(false) }
 
-    val statusColor = when (uiState.screenTimeStatus) {
-        "Excellent" -> Color(0xFF4CAF50)
-        "Good" -> Color(0xFFFBC02D)
-        "Moderate" -> Color(0xFFF57C00)
-        "Bad" -> Color(0xFFD32F2F)
-        else -> MaterialTheme.colorScheme.primary
+    val (statusColor, statusIcon) = when (uiState.screenTimeStatus) {
+        "Excellence" -> Color(0xFF4CAF50) to Icons.Default.SentimentVerySatisfied
+        "Good" -> Color(0xFFFBC02D) to Icons.Default.SentimentSatisfied
+        "Moderate" -> Color(0xFFF57C00) to Icons.Default.SentimentNeutral
+        "High" -> Color(0xFFD32F2F) to Icons.Default.SentimentDissatisfied
+        "Very High" -> Color(0xFFB71C1C) to Icons.Default.SentimentVeryDissatisfied
+        else -> MaterialTheme.colorScheme.primary to Icons.Default.Info
+    }
+
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text("Close")
+                }
+            },
+            title = {
+                Text(
+                    "How levels are calculated",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "Based on today's foreground app usage.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    HorizontalDivider()
+                    
+                    Column {
+                        Text(
+                            "Total screen time",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "All launchable apps",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "<2h Excellence | 2-3h Good | 3-4h Moderate | 4-5h High | 5h+ Very High",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    
+                    HorizontalDivider()
+                    
+                    Column {
+                        Text(
+                            "Controlled screen time",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Only apps in your control list",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "<1h Excellence | 1-2h Good | 2-3h Moderate | 3-4h High | 4h+ Very High",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 
     Card(
@@ -276,7 +346,7 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            Icons.Default.ThumbUp,
+                            statusIcon,
                             contentDescription = null,
                             tint = statusColor,
                             modifier = Modifier.size(16.dp)
@@ -291,9 +361,11 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             Icons.Default.Info,
-                            contentDescription = null,
+                            contentDescription = "Show calculation details",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier
+                                .size(14.dp)
+                                .clickable { showInfoDialog = true }
                         )
                     }
                 }
