@@ -1,9 +1,12 @@
 package io.github.mdsadiqueinam.hidayah.data
 
+import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
 import javax.inject.Inject
 
 class AppRepository @Inject constructor(
@@ -25,6 +28,19 @@ class AppRepository @Inject constructor(
             }
             .distinctBy { it.packageName }
             .sortedBy { it.appName.lowercase() }
+    }
+
+    fun getDailyUsageStats(): Map<String, UsageStats> {
+        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val startTime = calendar.timeInMillis
+        val endTime = System.currentTimeMillis()
+
+        return usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
     }
 
     fun getControlledApps(): Flow<List<ControlledApp>> {

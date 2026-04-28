@@ -37,7 +37,8 @@ fun NavGraph(navController: NavHostController) {
                 uiState = uiState,
                 onNavigateToAppSettings = { packageName ->
                     navController.navigate(Screen.AppSettings.createRoute(packageName))
-                }
+                },
+                viewModel = viewModel
             )
         }
         composable(Screen.Report.route) {

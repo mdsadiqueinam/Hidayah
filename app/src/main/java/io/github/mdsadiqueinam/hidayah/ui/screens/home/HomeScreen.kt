@@ -1,5 +1,7 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,28 +10,43 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.SelfImprovement
-import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import io.github.mdsadiqueinam.hidayah.ui.components.FlowButton
 
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onNavigateToAppSettings: (String) -> Unit = {}
+    onNavigateToAppSettings: (String) -> Unit = {},
+    viewModel: HomeViewModel? = null
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel?.onResume()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -39,6 +56,9 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
+            if (!uiState.isUsageStatsPermissionGranted) {
+                item { PermissionRequiredCard() }
+            }
             item { PauseProtectionCard(uiState) }
             item { ScreenTimeCard(uiState) }
             item { FocusModeCard(uiState) }
@@ -73,6 +93,49 @@ fun HomeScreen(
             AppSelectionDialog(
                 onDismiss = { showAddDialog = false }
             )
+        }
+    }
+}
+
+@Composable
+fun PermissionRequiredCard() {
+    val context = LocalContext.current
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Usage Access Required",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Hidayah needs usage access to track your screen time and provide insights.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Grant Permission")
+            }
         }
     }
 }
@@ -129,6 +192,14 @@ fun PauseProtectionCard(uiState: HomeUiState) {
 @Composable
 fun ScreenTimeCard(uiState: HomeUiState) {
     var expanded by remember { mutableStateOf(false) }
+
+    val statusColor = when (uiState.screenTimeStatus) {
+        "Excellent" -> Color(0xFF4CAF50)
+        "Good" -> Color(0xFFFBC02D)
+        "Moderate" -> Color(0xFFF57C00)
+        "Bad" -> Color(0xFFD32F2F)
+        else -> MaterialTheme.colorScheme.primary
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -207,13 +278,13 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                         Icon(
                             Icons.Default.ThumbUp,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
+                            tint = statusColor,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = uiState.screenTimeStatus,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = statusColor,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.bodyMedium
                         )
