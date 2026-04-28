@@ -6,11 +6,24 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import io.github.mdsadiqueinam.hidayah.ui.navigation.NavGraph
+import io.github.mdsadiqueinam.hidayah.ui.navigation.Screen
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +32,56 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HidayahTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+fun MainScreen() {
+    val navController = rememberNavController()
+    val items = listOf(
+        Screen.Home,
+        Screen.Report,
+        Screen.Settings,
     )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    HidayahTheme {
-        Greeting("Android")
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = when (screen) {
+                                    Screen.Home -> Icons.Default.Home
+                                    Screen.Report -> Icons.Default.Info
+                                    Screen.Settings -> Icons.Default.Settings
+                                },
+                                contentDescription = null
+                            )
+                        },
+                        label = { Text(screen.route.replaceFirstChar { it.uppercase() }) },
+                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        androidx.compose.foundation.layout.Box(modifier = Modifier.padding(innerPadding)) {
+            NavGraph(navController = navController)
+        }
     }
 }
