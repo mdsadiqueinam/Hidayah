@@ -2,33 +2,20 @@ package io.github.mdsadiqueinam.hidayah.data
 
 import android.content.Context
 import android.content.Intent
-
-data class AppItem(
-    val packageName: String,
-    val appName: String
-)
+import android.content.pm.PackageManager
+import kotlinx.coroutines.flow.Flow
 
 class AppRepository(private val context: Context) {
+    private val database = AppDatabase.getDatabase(context)
+    private val controlledAppDao = database.controlledAppDao()
+
     fun getInstalledApps(): List<AppItem> {
         val packageManager = context.packageManager
         val intent = Intent(Intent.ACTION_MAIN, null).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
-
+        
         return packageManager.queryIntentActivities(intent, 0)
-            .filter { resolveInfo ->
-                // Filter out system apps if they don't have a launcher icon 
-                // and are marked as system apps. 
-                // We keep them if they are in the launcher but we can be more strict:
-                val isSystemApp = (resolveInfo.activityInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-                val isUpdatedSystemApp = (resolveInfo.activityInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                
-                // If it's a system app, we check if it's one we typically want to see in a "drawer"
-                // Actually, queryIntentActivities with CATEGORY_LAUNCHER already filters for drawer apps.
-                // The issue was visibility. Now we just filter out fundamental system apps if desired.
-                // For "Drawer only", CATEGORY_LAUNCHER is already correct.
-                true 
-            }
             .map { resolveInfo ->
                 AppItem(
                     packageName = resolveInfo.activityInfo.packageName,
@@ -37,5 +24,18 @@ class AppRepository(private val context: Context) {
             }
             .distinctBy { it.packageName }
             .sortedBy { it.appName.lowercase() }
+    }
+
+    fun getControlledApps(): Flow<List<ControlledApp>> {
+        return controlledAppDao.getAllControlledApps()
+    }
+
+    suspend fun saveControlledApps(apps: List<ControlledApp>) {
+        controlledAppDao.deleteAll()
+        controlledAppDao.insertAll(apps)
+    }
+
+    suspend fun getControlledPackageNames(): List<String> {
+        return controlledAppDao.getAllPackageNames()
     }
 }

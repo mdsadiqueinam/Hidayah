@@ -39,7 +39,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun AppSelectionDialog(
     onDismiss: () -> Unit,
-    onSave: (Set<String>) -> Unit,
     viewModel: AppSelectionViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -100,8 +99,9 @@ fun AppSelectionDialog(
                         Text("Cancel")
                     }
                     TextButton(
-                        onClick = {
-                            onSave(uiState.selectedPackages)
+                        onClick = { 
+                            uiState.onSave(uiState.selectedPackages)
+                            onDismiss()
                         }
                     ) {
                         Text("Done")
@@ -121,7 +121,7 @@ fun AppRow(
 ) {
     val context = LocalContext.current
     val packageManager = context.packageManager
-
+    
     val icon = remember(packageName) {
         try {
             packageManager.getApplicationIcon(packageName).toBitmap().asImageBitmap()
@@ -150,9 +150,9 @@ fun AppRow(
                 shape = MaterialTheme.shapes.small
             ) {}
         }
-
+        
         Spacer(modifier = Modifier.width(16.dp))
-
+        
         Text(
             text = appName,
             style = MaterialTheme.typography.bodyLarge,

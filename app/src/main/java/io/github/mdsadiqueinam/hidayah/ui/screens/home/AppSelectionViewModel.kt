@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.mdsadiqueinam.hidayah.data.AppItem
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
+import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +19,7 @@ data class AppSelectionUiState(
     val selectedPackages: Set<String> = emptySet(),
     val onSearchQueryChange: (String) -> Unit = {},
     val onAppToggle: (String) -> Unit = {},
-    val onSave: () -> Unit = {},
-    val onDismiss: () -> Unit = {}
+    val onSave: (Set<String>) -> Unit = {}
 )
 
 class AppSelectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -29,18 +29,21 @@ class AppSelectionViewModel(application: Application) : AndroidViewModel(applica
     private val _uiState = MutableStateFlow(
         AppSelectionUiState(
             onSearchQueryChange = ::onSearchQueryChange,
-            onAppToggle = ::onAppToggle
+            onAppToggle = ::onAppToggle,
+            onSave = ::onSave
         )
     )
     val uiState: StateFlow<AppSelectionUiState> = _uiState.asStateFlow()
 
     init {
-        loadApps()
+        loadInitialData()
     }
 
-    private fun loadApps() {
+    private fun loadInitialData() {
         viewModelScope.launch(Dispatchers.IO) {
             allApps = repository.getInstalledApps()
+            val savedPackages = repository.getControlledPackageNames().toSet()
+            _uiState.update { it.copy(selectedPackages = savedPackages) }
             filterApps()
         }
     }
@@ -68,6 +71,14 @@ class AppSelectionViewModel(application: Application) : AndroidViewModel(applica
                 state.selectedPackages + packageName
             }
             state.copy(selectedPackages = newSelected)
+        }
+    }
+
+    private fun onSave(selectedPackages: Set<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val appsToSave = allApps.filter { selectedPackages.contains(it.packageName) }
+                .map { ControlledApp(it.packageName, it.appName) }
+            repository.saveControlledApps(appsToSave)
         }
     }
 }
