@@ -44,6 +44,7 @@ fun ControlledAppsHeader(
 fun SavedAppCard(
     appName: String,
     packageName: String,
+    usage: String,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,7 +94,7 @@ fun SavedAppCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Usage: 0h 0m | Attempts: 0",
+                    text = "Usage: $usage",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

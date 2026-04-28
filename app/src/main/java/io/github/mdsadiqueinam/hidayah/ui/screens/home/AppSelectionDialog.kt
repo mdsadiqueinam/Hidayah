@@ -79,6 +79,7 @@ fun AppSelectionDialog(
                         AppRow(
                             appName = app.appName,
                             packageName = app.packageName,
+                            usage = app.formattedUsage,
                             isSelected = uiState.selectedPackages.contains(app.packageName),
                             onToggle = { uiState.onAppToggle(app.packageName) }
                         )
@@ -116,6 +117,7 @@ fun AppSelectionDialog(
 fun AppRow(
     appName: String,
     packageName: String,
+    usage: String,
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
@@ -153,11 +155,19 @@ fun AppRow(
         
         Spacer(modifier = Modifier.width(16.dp))
         
-        Text(
-            text = appName,
-            style = MaterialTheme.typography.bodyLarge,
+        Column(
             modifier = Modifier.weight(1f)
-        )
+        ) {
+            Text(
+                text = appName,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = usage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         Checkbox(
             checked = isSelected,

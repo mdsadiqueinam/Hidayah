@@ -79,11 +79,12 @@ fun HomeScreen(
                     )
                 }
             } else {
-                items(uiState.controlledApps) { app ->
+                items(uiState.controlledApps) { controlledAppWithUsage ->
                     SavedAppCard(
-                        appName = app.appName,
-                        packageName = app.packageName,
-                        onSettingsClick = { onNavigateToAppSettings(app.packageName) }
+                        appName = controlledAppWithUsage.app.appName,
+                        packageName = controlledAppWithUsage.app.packageName,
+                        usage = controlledAppWithUsage.usage,
+                        onSettingsClick = { onNavigateToAppSettings(controlledAppWithUsage.app.packageName) }
                     )
                 }
             }

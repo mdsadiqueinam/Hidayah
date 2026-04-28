@@ -25,6 +25,11 @@ data class TopApp(
     val usage: String
 )
 
+data class ControlledAppWithUsage(
+    val app: ControlledApp,
+    val usage: String
+)
+
 enum class ScreenTimeCategory(val label: String) {
     TOTAL("Total"),
     CONTROLLED_APP("Controlled App")
@@ -32,7 +37,7 @@ enum class ScreenTimeCategory(val label: String) {
 
 data class HomeUiState(
     val title: String = "Controlled Apps",
-    val controlledApps: List<ControlledApp> = emptyList(),
+    val controlledApps: List<ControlledAppWithUsage> = emptyList(),
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
@@ -52,11 +57,13 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: AppRepository,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private var rawControlledApps: List<ControlledApp> = emptyList()
 
     init {
         _uiState.update { state ->
@@ -113,7 +120,7 @@ class HomeViewModel @Inject constructor(
     private fun observeControlledApps() {
         viewModelScope.launch {
             repository.getControlledApps().collect { apps ->
-                _uiState.update { it.copy(controlledApps = apps) }
+                rawControlledApps = apps
                 refreshUsageStats()
             }
         }
@@ -123,7 +130,7 @@ class HomeViewModel @Inject constructor(
         if (!_uiState.value.isUsageStatsPermissionGranted) return
 
         val stats = repository.getDailyUsageStats()
-        val controlledPackageNames = _uiState.value.controlledApps.map { it.packageName }.toSet()
+        val controlledPackageNames = rawControlledApps.map { it.packageName }.toSet()
         val category = _uiState.value.selectedScreenTimeCategory
 
         val filteredStats = if (category == ScreenTimeCategory.TOTAL) {
@@ -165,26 +172,38 @@ class HomeViewModel @Inject constructor(
         
         val percentage = if (dayPassedMs > 0) (totalTimeMs * 100 / dayPassedMs).toInt() else 0
 
-        // Get app names for top apps
-        val appNameMap = repository.getInstalledApps().associate { it.packageName to it.appName }
-        
         val topApps = filteredStats.values
             .filter { it.totalTimeInForeground > 0 }
             .sortedByDescending { it.totalTimeInForeground }
             .take(3)
             .map {
+                val appName = try {
+                    val packageManager = context.packageManager
+                    val appInfo = packageManager.getApplicationInfo(it.packageName, 0)
+                    packageManager.getApplicationLabel(appInfo).toString()
+                } catch (e: Exception) {
+                    it.packageName
+                }
                 TopApp(
-                    name = appNameMap[it.packageName] ?: it.packageName,
+                    name = appName,
                     usage = formatDuration(it.totalTimeInForeground)
                 )
             }
+
+        val controlledAppsWithUsage = rawControlledApps.map { app ->
+            ControlledAppWithUsage(
+                app = app,
+                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L)
+            )
+        }
 
         _uiState.update { state ->
             state.copy(
                 totalScreenTime = formatDuration(totalTimeMs),
                 screenTimePercentage = "$percentage% of the day",
                 screenTimeStatus = status,
-                topApps = topApps
+                topApps = topApps,
+                controlledApps = controlledAppsWithUsage
             )
         }
     }

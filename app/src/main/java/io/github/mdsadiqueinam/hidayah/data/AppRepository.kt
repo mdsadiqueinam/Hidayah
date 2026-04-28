@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 import javax.inject.Inject
 
+import java.util.concurrent.TimeUnit
+
 class AppRepository @Inject constructor(
     private val context: Context,
     private val controlledAppDao: ControlledAppDao
@@ -19,15 +21,31 @@ class AppRepository @Inject constructor(
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
         
-        return packageManager.queryIntentActivities(intent, 0)
+        val usageStats = getDailyUsageStats()
+        
+        return (packageManager.queryIntentActivities(intent, 0) ?: emptyList())
             .map { resolveInfo ->
+                val packageName = resolveInfo.activityInfo.packageName
+                val usageTime = usageStats[packageName]?.totalTimeInForeground ?: 0L
                 AppItem(
-                    packageName = resolveInfo.activityInfo.packageName,
-                    appName = resolveInfo.loadLabel(packageManager).toString()
+                    packageName = packageName,
+                    appName = resolveInfo.loadLabel(packageManager).toString(),
+                    usageTime = usageTime,
+                    formattedUsage = formatDuration(usageTime)
                 )
             }
             .distinctBy { it.packageName }
-            .sortedBy { it.appName.lowercase() }
+            .sortedByDescending { it.usageTime }
+    }
+
+    private fun formatDuration(millis: Long): String {
+        val hours = TimeUnit.MILLISECONDS.toHours(millis)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+        return if (hours > 0) {
+            "${hours}h ${minutes}m"
+        } else {
+            "${minutes}m"
+        }
     }
 
     fun getDailyUsageStats(): Map<String, UsageStats> {
@@ -40,7 +58,7 @@ class AppRepository @Inject constructor(
         val startTime = calendar.timeInMillis
         val endTime = System.currentTimeMillis()
 
-        return usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
+        return usageStatsManager.queryAndAggregateUsageStats(startTime, endTime) ?: emptyMap()
     }
 
     fun getControlledApps(): Flow<List<ControlledApp>> {
