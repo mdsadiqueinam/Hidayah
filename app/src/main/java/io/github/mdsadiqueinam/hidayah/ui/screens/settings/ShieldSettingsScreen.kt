@@ -22,6 +22,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +40,12 @@ fun ShieldSettingsScreen(
     viewModel: ShieldSettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { uiState.onImageSelected(it.toString()) }
+    }
 
     Scaffold(
         topBar = {
@@ -55,8 +71,10 @@ fun ShieldSettingsScreen(
             CustomizeShieldCard(
                 headline = uiState.config.headline,
                 subHeadline = uiState.config.subHeadline,
+                imagePath = uiState.config.imagePath,
                 onHeadlineChange = uiState.onHeadlineChange,
-                onSubHeadlineChange = uiState.onSubHeadlineChange
+                onSubHeadlineChange = uiState.onSubHeadlineChange,
+                onImageClick = { imagePickerLauncher.launch("image/*") }
             )
 
             OutlinedButton(
@@ -84,13 +102,30 @@ private fun borderStroke() = androidx.compose.foundation.BorderStroke(1.dp, Colo
 fun CustomizeShieldCard(
     headline: String,
     subHeadline: String,
+    imagePath: String?,
     onHeadlineChange: (String) -> Unit,
-    onSubHeadlineChange: (String) -> Unit
+    onSubHeadlineChange: (String) -> Unit,
+    onImageClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val cardBackground = MaterialTheme.colorScheme.inverseSurface
     val inputBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
     val accentColor = MaterialTheme.colorScheme.tertiary
     val onCardColor = MaterialTheme.colorScheme.inverseOnSurface
+
+    val bitmap = remember(imagePath) {
+        if (imagePath != null) {
+            try {
+                val uri = imagePath.toUri()
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                ImageDecoder.decodeBitmap(source)
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -111,10 +146,17 @@ fun CustomizeShieldCard(
                     .size(120.dp)
                     .clip(CircleShape)
                     .background(onCardColor.copy(alpha = 0.1f))
-                    .clickable { /* Add image */ },
+                    .clickable { onImageClick() },
                 contentAlignment = Alignment.Center
             ) {
-                // Empty for now as per image
+                if (bitmap != null) {
+                    androidx.compose.foundation.Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,6 +179,7 @@ fun CustomizeShieldCard(
                 BasicTextField(
                     value = headline,
                     onValueChange = onHeadlineChange,
+                    placeholder = "Pause. Think. Decide.",
                     textStyle = MaterialTheme.typography.headlineSmall.copy(
                         color = onCardColor,
                         textAlign = TextAlign.Center,
@@ -158,6 +201,7 @@ fun CustomizeShieldCard(
                 BasicTextField(
                     value = subHeadline,
                     onValueChange = onSubHeadlineChange,
+                    placeholder = "Take a breath before opening this app.",
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                         color = onCardColor.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center
@@ -228,15 +272,25 @@ fun CustomizeShieldCard(
 fun BasicTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    placeholder: String,
     textStyle: androidx.compose.ui.text.TextStyle,
     modifier: Modifier = Modifier,
     cursorColor: Color = Color.Unspecified
 ) {
-    androidx.compose.foundation.text.BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        textStyle = textStyle,
-        modifier = modifier,
-        cursorBrush = androidx.compose.ui.graphics.SolidColor(cursorColor)
-    )
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        if (value.isEmpty()) {
+            Text(
+                text = placeholder,
+                style = textStyle.copy(color = textStyle.color.copy(alpha = 0.4f)),
+                textAlign = TextAlign.Center
+            )
+        }
+        androidx.compose.foundation.text.BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            textStyle = textStyle,
+            modifier = Modifier.fillMaxWidth(),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(cursorColor)
+        )
+    }
 }

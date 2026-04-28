@@ -14,6 +14,7 @@ data class ShieldSettingsUiState(
     val config: ShieldConfig = ShieldConfig(),
     val onHeadlineChange: (String) -> Unit = {},
     val onSubHeadlineChange: (String) -> Unit = {},
+    val onImageSelected: (String) -> Unit = {},
     val onUseDefault: () -> Unit = {}
 )
 
@@ -38,6 +39,7 @@ class ShieldSettingsViewModel @Inject constructor(
             state.copy(
                 onHeadlineChange = { updateHeadline(it) },
                 onSubHeadlineChange = { updateSubHeadline(it) },
+                onImageSelected = { updateImagePath(it) },
                 onUseDefault = { useDefault() }
             )
         }
@@ -51,6 +53,12 @@ class ShieldSettingsViewModel @Inject constructor(
 
     private fun updateSubHeadline(subHeadline: String) {
         val newConfig = _uiState.value.config.copy(subHeadline = subHeadline)
+        _uiState.update { it.copy(config = newConfig) }
+        saveConfig(newConfig)
+    }
+
+    private fun updateImagePath(path: String) {
+        val newConfig = _uiState.value.config.copy(imagePath = path)
         _uiState.update { it.copy(config = newConfig) }
         saveConfig(newConfig)
     }
