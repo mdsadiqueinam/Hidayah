@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Schedule
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.ui.components.FlowButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,7 +102,47 @@ fun AppSettingsScreen(
                         onToggle = uiState.onHardLockToggle
                     )
                 }
+
+                item {
+                    RemoveAppCard(
+                        onRemove = {
+                            uiState.onRemoveApp()
+                            onBack()
+                        }
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun RemoveAppCard(onRemove: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        onClick = onRemove
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.width(16.dp))
+            Text(
+                "Remove App",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -179,26 +221,13 @@ fun <T> SettingsGridCard(
             )
             Spacer(Modifier.height(16.dp))
             
-            // Grid of buttons
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            FlowButton(
+                options = options,
+                labels = labels,
+                selectedOption = selectedOption,
+                onOptionSelected = onOptionSelected,
                 maxItemsInEachRow = 3
-            ) {
-                options.forEachIndexed { index, option ->
-                    val isSelected = option == selectedOption
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { onOptionSelected(option) },
-                        label = { Text(labels[index]) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    )
-                }
-            }
+            )
         }
     }
 }
@@ -230,24 +259,5 @@ fun HardLockCard(isLocked: Boolean, onToggle: (Boolean) -> Unit) {
             }
             Switch(checked = isLocked, onCheckedChange = onToggle)
         }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    maxItemsInEachRow: Int = Int.MAX_VALUE,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.FlowRow(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        verticalArrangement = verticalArrangement,
-        maxItemsInEachRow = maxItemsInEachRow
-    ) {
-        content()
     }
 }

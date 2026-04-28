@@ -18,7 +18,8 @@ data class AppSettingsUiState(
     val onDailyLimitChange: (Int) -> Unit = {},
     val onOpenDelayChange: (Int) -> Unit = {},
     val onSessionLimitChange: (Int) -> Unit = {},
-    val onHardLockToggle: (Boolean) -> Unit = {}
+    val onHardLockToggle: (Boolean) -> Unit = {},
+    val onRemoveApp: () -> Unit = {}
 )
 
 @HiltViewModel
@@ -44,9 +45,16 @@ class AppSettingsViewModel @Inject constructor(
                     onDailyLimitChange = { limit -> updateApp { it.copy(dailyLimit = limit) } },
                     onOpenDelayChange = { delay -> updateApp { it.copy(openDelay = delay) } },
                     onSessionLimitChange = { limit -> updateApp { it.copy(sessionLimit = limit) } },
-                    onHardLockToggle = { locked -> updateApp { it.copy(isHardLocked = locked) } }
+                    onHardLockToggle = { locked -> updateApp { it.copy(isHardLocked = locked) } },
+                    onRemoveApp = { removeApp() }
                 )
             }
+        }
+    }
+
+    private fun removeApp() {
+        viewModelScope.launch {
+            repository.removeControlledApp(packageName)
         }
     }
 

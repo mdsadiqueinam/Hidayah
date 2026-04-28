@@ -44,6 +44,10 @@ class AppRepository @Inject constructor(
         controlledAppDao.update(app)
     }
 
+    suspend fun removeControlledApp(packageName: String) {
+        controlledAppDao.delete(packageName)
+    }
+
     suspend fun getControlledPackageNames(): List<String> {
         return controlledAppDao.getAllPackageNames()
     }
