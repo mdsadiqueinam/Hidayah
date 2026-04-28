@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit
 
 class AppRepository @Inject constructor(
     private val context: Context,
-    private val controlledAppDao: ControlledAppDao
+    private val controlledAppDao: ControlledAppDao,
+    private val shieldConfigDao: ShieldConfigDao
 ) {
     fun getInstalledApps(): List<AppItem> {
         val packageManager = context.packageManager
@@ -84,5 +85,13 @@ class AppRepository @Inject constructor(
 
     suspend fun getControlledPackageNames(): List<String> {
         return controlledAppDao.getAllPackageNames()
+    }
+
+    fun getShieldConfig(): Flow<ShieldConfig?> {
+        return shieldConfigDao.getShieldConfig()
+    }
+
+    suspend fun updateShieldConfig(config: ShieldConfig) {
+        shieldConfigDao.insertOrUpdate(config)
     }
 }

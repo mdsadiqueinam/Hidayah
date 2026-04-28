@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.mdsadiqueinam.hidayah.data.AppDatabase
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledAppDao
+import io.github.mdsadiqueinam.hidayah.data.ShieldConfigDao
 import javax.inject.Singleton
 
 @Module
@@ -27,11 +28,17 @@ object DatabaseModule {
     }
 
     @Provides
+    fun provideShieldConfigDao(database: AppDatabase): ShieldConfigDao {
+        return database.shieldConfigDao()
+    }
+
+    @Provides
     @Singleton
     fun provideAppRepository(
         @ApplicationContext context: Context,
-        controlledAppDao: ControlledAppDao
+        controlledAppDao: ControlledAppDao,
+        shieldConfigDao: ShieldConfigDao
     ): AppRepository {
-        return AppRepository(context, controlledAppDao)
+        return AppRepository(context, controlledAppDao, shieldConfigDao)
     }
 }
