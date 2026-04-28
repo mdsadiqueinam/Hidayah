@@ -12,10 +12,29 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class TopApp(
+    val name: String,
+    val usage: String
+)
+
 data class HomeUiState(
     val title: String = "Controlled Apps",
     val controlledApps: List<ControlledApp> = emptyList(),
-    val onAddClick: () -> Unit = {}
+    val isProtectionActive: Boolean = true,
+    val isFocusModeActive: Boolean = false,
+    val selectedPauseDuration: String = "5m",
+    val totalScreenTime: String = "2h 45m",
+    val screenTimePercentage: String = "11% of the day",
+    val screenTimeStatus: String = "Good",
+    val topApps: List<TopApp> = listOf(
+        TopApp("Brave", "1h 37m"),
+        TopApp("Untap", "19m"),
+        TopApp("Al Quran", "14m")
+    ),
+    val onAddClick: () -> Unit = {},
+    val onProtectionToggle: (Boolean) -> Unit = {},
+    val onFocusModeToggle: (Boolean) -> Unit = {},
+    val onPauseDurationChange: (String) -> Unit = {}
 )
 
 @HiltViewModel
@@ -27,6 +46,19 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        _uiState.update { state ->
+            state.copy(
+                onProtectionToggle = { active -> 
+                    _uiState.update { it.copy(isProtectionActive = active) }
+                },
+                onFocusModeToggle = { active ->
+                    _uiState.update { it.copy(isFocusModeActive = active) }
+                },
+                onPauseDurationChange = { duration ->
+                    _uiState.update { it.copy(selectedPauseDuration = duration) }
+                }
+            )
+        }
         observeControlledApps()
     }
 
