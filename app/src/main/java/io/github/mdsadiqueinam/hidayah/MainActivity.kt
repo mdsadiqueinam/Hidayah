@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -49,41 +50,49 @@ fun MainScreen() {
         Screen.Settings,
     )
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    // Hide bottom bar on detail screens
+    val showBottomBar = currentDestination?.route in items.map { it.route }
+
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = when (screen) {
-                                    Screen.Home -> Icons.Default.Home
-                                    Screen.Report -> Icons.Default.Info
-                                    Screen.Settings -> Icons.Default.Settings
-                                    else -> TODO("Not yet implemented")
-                                },
-                                contentDescription = null
-                            )
-                        },
-                        label = { Text(screen.route.replaceFirstChar { it.uppercase() }) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (showBottomBar) {
+                NavigationBar {
+                    items.forEach { screen ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = when (screen) {
+                                        Screen.Home -> Icons.Default.Home
+                                        Screen.Report -> Icons.Default.Info
+                                        Screen.Settings -> Icons.Default.Settings
+                                        else -> Icons.Default.Settings
+                                    },
+                                    contentDescription = null
+                                )
+                            },
+                            label = { Text(screen.route.replaceFirstChar { it.uppercase() }) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        androidx.compose.foundation.layout.Box(modifier = Modifier.padding(innerPadding)) {
+        // We only apply the bottom padding from the Scaffold's innerPadding to avoid double padding at the top.
+        // The individual screens will handle their own top/status bar padding via their own Scaffolds or insets.
+        Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
             NavGraph(navController = navController)
         }
     }
