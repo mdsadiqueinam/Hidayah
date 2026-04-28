@@ -15,9 +15,9 @@ import javax.inject.Inject
 
 data class AppSettingsUiState(
     val app: ControlledApp? = null,
-    val onDailyLimitChange: (Int) -> Unit = {},
-    val onOpenDelayChange: (Int) -> Unit = {},
-    val onSessionLimitChange: (Int) -> Unit = {},
+    val onDailyLimitChange: (Int?) -> Unit = {},
+    val onOpenDelayChange: (Int?) -> Unit = {},
+    val onSessionLimitChange: (Int?) -> Unit = {},
     val onHardLockToggle: (Boolean) -> Unit = {},
     val onRemoveApp: () -> Unit = {}
 )
@@ -42,9 +42,9 @@ class AppSettingsViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     app = app,
-                    onDailyLimitChange = { limit -> updateApp { it.copy(dailyLimit = limit) } },
-                    onOpenDelayChange = { delay -> updateApp { it.copy(openDelay = delay) } },
-                    onSessionLimitChange = { limit -> updateApp { it.copy(sessionLimit = limit) } },
+                    onDailyLimitChange = { limit -> updateApp { it.copy(dailyLimit = limit ?: 0) } },
+                    onOpenDelayChange = { delay -> updateApp { it.copy(openDelay = delay ?: 0) } },
+                    onSessionLimitChange = { limit -> updateApp { it.copy(sessionLimit = limit ?: 0) } },
                     onHardLockToggle = { locked -> updateApp { it.copy(isHardLocked = locked) } },
                     onRemoveApp = { removeApp() }
                 )

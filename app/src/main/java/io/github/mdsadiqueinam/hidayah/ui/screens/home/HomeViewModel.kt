@@ -17,12 +17,18 @@ data class TopApp(
     val usage: String
 )
 
+enum class ScreenTimeCategory(val label: String) {
+    TOTAL("Total"),
+    CONTROLLED_APP("Controlled App")
+}
+
 data class HomeUiState(
     val title: String = "Controlled Apps",
     val controlledApps: List<ControlledApp> = emptyList(),
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
-    val selectedPauseDuration: String = "5m",
+    val selectedPauseDuration: String? = null,
+    val selectedScreenTimeCategory: ScreenTimeCategory = ScreenTimeCategory.TOTAL,
     val totalScreenTime: String = "2h 45m",
     val screenTimePercentage: String = "11% of the day",
     val screenTimeStatus: String = "Good",
@@ -34,7 +40,8 @@ data class HomeUiState(
     val onAddClick: () -> Unit = {},
     val onProtectionToggle: (Boolean) -> Unit = {},
     val onFocusModeToggle: (Boolean) -> Unit = {},
-    val onPauseDurationChange: (String) -> Unit = {}
+    val onPauseDurationChange: (String?) -> Unit = {},
+    val onScreenTimeCategoryChange: (ScreenTimeCategory) -> Unit = {}
 )
 
 @HiltViewModel
@@ -56,6 +63,9 @@ class HomeViewModel @Inject constructor(
                 },
                 onPauseDurationChange = { duration ->
                     _uiState.update { it.copy(selectedPauseDuration = duration) }
+                },
+                onScreenTimeCategoryChange = { category ->
+                    _uiState.update { it.copy(selectedScreenTimeCategory = category) }
                 }
             )
         }

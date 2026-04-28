@@ -196,7 +196,7 @@ fun <T> SettingsGridCard(
     options: List<T>,
     labels: List<String>,
     selectedOption: T,
-    onOptionSelected: (T) -> Unit
+    onOptionSelected: (T?) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -226,7 +226,8 @@ fun <T> SettingsGridCard(
                 labels = labels,
                 selectedOption = selectedOption,
                 onOptionSelected = onOptionSelected,
-                maxItemsInEachRow = 3
+                maxItemsInEachRow = 3,
+                isToggleable = true
             )
         }
     }

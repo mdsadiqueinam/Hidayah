@@ -13,10 +13,11 @@ import androidx.compose.ui.unit.dp
 fun <T> FlowButton(
     options: List<T>,
     labels: List<String>,
-    selectedOption: T,
-    onOptionSelected: (T) -> Unit,
+    selectedOption: T?,
+    onOptionSelected: (T?) -> Unit,
     maxItemsInEachRow: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isToggleable: Boolean = false
 ) {
     val chunks = options.zip(labels).chunked(maxItemsInEachRow)
     
@@ -34,7 +35,13 @@ fun <T> FlowButton(
                     FilterChip(
                         modifier = Modifier.weight(1f),
                         selected = isSelected,
-                        onClick = { onOptionSelected(option) },
+                        onClick = { 
+                            if (isToggleable && isSelected) {
+                                onOptionSelected(null)
+                            } else {
+                                onOptionSelected(option)
+                            }
+                        },
                         label = {
                             Text(
                                 text = label,
@@ -81,7 +88,8 @@ fun FlowButtonPreview() {
                 labels = labels,
                 selectedOption = 1,
                 onOptionSelected = {},
-                maxItemsInEachRow = 3
+                maxItemsInEachRow = 3,
+                isToggleable = true
             )
         }
     }

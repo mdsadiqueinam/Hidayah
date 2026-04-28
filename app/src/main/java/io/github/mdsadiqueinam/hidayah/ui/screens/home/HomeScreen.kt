@@ -1,12 +1,14 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SelfImprovement
@@ -16,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,7 +98,8 @@ fun PauseProtectionCard(uiState: HomeUiState) {
                 labels = pauseOptions,
                 selectedOption = uiState.selectedPauseDuration,
                 onOptionSelected = uiState.onPauseDurationChange,
-                maxItemsInEachRow = 4
+                maxItemsInEachRow = 4,
+                isToggleable = true
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -124,12 +128,14 @@ fun PauseProtectionCard(uiState: HomeUiState) {
 
 @Composable
 fun ScreenTimeCard(uiState: HomeUiState) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -140,16 +146,42 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                
+                Box {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
+                        modifier = Modifier.clickable { expanded = true }
                     ) {
-                        Text("Total", style = MaterialTheme.typography.bodySmall)
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = uiState.selectedScreenTimeCategory.label,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        ScreenTimeCategory.entries.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.label) },
+                                onClick = {
+                                    uiState.onScreenTimeCategoryChange(category)
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -194,7 +226,8 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                         )
                     }
                 }
-                
+
+                // App usage stats
                 Surface(
                     modifier = Modifier.width(140.dp),
                     shape = RoundedCornerShape(16.dp),
