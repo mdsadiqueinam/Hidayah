@@ -47,6 +47,8 @@ class AppTrackerService : Service() {
     }
 
     private fun startTracking() {
+        Log.d("AppTrackerService", "Tracking is started")
+
         trackingJob = serviceScope.launch {
 
             val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
@@ -82,10 +84,9 @@ class AppTrackerService : Service() {
                     continue
                 }
 
-                val endTime = now
-                val startTime = endTime - 2000
+                val startTime = now - 2000
 
-                val events = usageStatsManager.queryEvents(startTime, endTime)
+                val events = usageStatsManager.queryEvents(startTime, now)
                 val event = UsageEvents.Event()
 
                 var latestResumedPackage: String? = null
@@ -159,6 +160,8 @@ class AppTrackerService : Service() {
     }
 
     override fun onDestroy() {
+        Log.d("AppTrackerService", "Tracking is stopped")
+
         super.onDestroy()
         serviceScope.cancel()
     }
