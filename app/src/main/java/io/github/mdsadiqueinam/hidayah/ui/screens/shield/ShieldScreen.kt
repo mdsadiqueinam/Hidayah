@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import io.github.mdsadiqueinam.hidayah.ui.components.ShieldCard
+import io.github.mdsadiqueinam.hidayah.ui.components.ShieldContent
 
 @Composable
 fun ShieldScreen(
@@ -25,10 +25,11 @@ fun ShieldScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.inverseSurface)
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        ShieldCard(
+        ShieldContent(
             headline = uiState.shieldConfig.headline,
             subHeadline = uiState.shieldConfig.subHeadline,
             imagePath = uiState.shieldConfig.imagePath,
@@ -38,7 +39,7 @@ fun ShieldScreen(
             editable = false,
             onCloseClick = onClose,
             onOpenClick = onOpen,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
