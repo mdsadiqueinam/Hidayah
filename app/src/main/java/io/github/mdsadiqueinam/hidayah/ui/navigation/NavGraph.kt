@@ -10,10 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.github.mdsadiqueinam.hidayah.ui.screens.appsettings.AppSettingsScreen
-import io.github.mdsadiqueinam.hidayah.ui.screens.report.ReportScreen
-import io.github.mdsadiqueinam.hidayah.ui.screens.settings.SettingsScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.home.HomeScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.home.HomeViewModel
+import io.github.mdsadiqueinam.hidayah.ui.screens.report.ReportScreen
+import io.github.mdsadiqueinam.hidayah.ui.screens.settings.SettingsScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.settings.ShieldSettingsScreen
 
 sealed class Screen(val route: String) {

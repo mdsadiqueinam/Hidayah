@@ -1,7 +1,17 @@
 package io.github.mdsadiqueinam.hidayah.ui.components
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +30,7 @@ fun <T> FlowButton(
     isToggleable: Boolean = false
 ) {
     val chunks = options.zip(labels).chunked(maxItemsInEachRow)
-    
+
     Column(
         modifier = modifier.fillMaxWidth(),
     ) {
@@ -35,7 +45,7 @@ fun <T> FlowButton(
                     FilterChip(
                         modifier = Modifier.weight(1f),
                         selected = isSelected,
-                        onClick = { 
+                        onClick = {
                             if (isToggleable && isSelected) {
                                 onOptionSelected(null)
                             } else {
@@ -58,12 +68,14 @@ fun <T> FlowButton(
                             borderColor = MaterialTheme.colorScheme.outline
                         ),
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                                alpha = 0.4f
+                            ),
                             selectedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
-                
+
                 // Add empty spacers to maintain the grid structure if the row isn't full
                 if (rowItems.size < maxItemsInEachRow) {
                     repeat(maxItemsInEachRow - rowItems.size) {

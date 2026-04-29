@@ -1,5 +1,6 @@
 package io.github.mdsadiqueinam.hidayah
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,23 +23,21 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import io.github.mdsadiqueinam.hidayah.service.AppTrackerService
 import io.github.mdsadiqueinam.hidayah.ui.navigation.NavGraph
 import io.github.mdsadiqueinam.hidayah.ui.navigation.Screen
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
-import io.github.mdsadiqueinam.hidayah.service.AppTrackerService
-import android.content.Intent
-
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         // Start the background tracking service
         startService(Intent(this, AppTrackerService::class.java))
-        
+
         setContent {
             HidayahTheme {
                 MainScreen()

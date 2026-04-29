@@ -1,7 +1,17 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.appsettings
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,8 +21,22 @@ import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -59,14 +83,22 @@ fun AppSettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item { AppIdentityCard(app) }
-                
+
                 item {
                     SettingsGridCard(
                         title = "Daily Limits",
                         description = "How many times this app can be opened in a day",
                         icon = Icons.Default.Schedule,
                         options = listOf(0, 1, 2, 3, 4, 5, 6),
-                        labels = listOf("No Limit", "1 time", "2 times", "3 times", "4 times", "5 times", "6 times"),
+                        labels = listOf(
+                            "No Limit",
+                            "1 time",
+                            "2 times",
+                            "3 times",
+                            "4 times",
+                            "5 times",
+                            "6 times"
+                        ),
                         selectedOption = app.dailyLimit,
                         onOptionSelected = uiState.onDailyLimitChange
                     )
@@ -90,7 +122,19 @@ fun AppSettingsScreen(
                         description = "Maximum duration for a single session",
                         icon = Icons.Default.Timer,
                         options = listOf(0, 1, 2, 5, 10, 15, 30, 45, 60, 120, 180),
-                        labels = listOf("No Limit", "1m", "2m", "5m", "10m", "15m", "30m", "45m", "1h", "2h", "3h"),
+                        labels = listOf(
+                            "No Limit",
+                            "1m",
+                            "2m",
+                            "5m",
+                            "10m",
+                            "15m",
+                            "30m",
+                            "45m",
+                            "1h",
+                            "2h",
+                            "3h"
+                        ),
                         selectedOption = app.sessionLimit,
                         onOptionSelected = uiState.onSessionLimitChange
                     )
@@ -181,8 +225,16 @@ fun AppIdentityCard(app: ControlledApp) {
             }
             Spacer(Modifier.width(16.dp))
             Column {
-                Text(app.appName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(app.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    app.appName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    app.packageName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -211,7 +263,11 @@ fun <T> SettingsGridCard(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Text(
                 text = description,
@@ -220,7 +276,7 @@ fun <T> SettingsGridCard(
                 modifier = Modifier.padding(top = 4.dp)
             )
             Spacer(Modifier.height(16.dp))
-            
+
             FlowButton(
                 options = options,
                 labels = labels,
@@ -255,7 +311,11 @@ fun HardLockCard(isLocked: Boolean, onToggle: (Boolean) -> Unit) {
             )
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text("Hard Lock", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(
+                    "Hard Lock",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
                 Text("Completely block this app", style = MaterialTheme.typography.bodyMedium)
             }
             Switch(checked = isLocked, onCheckedChange = onToggle)

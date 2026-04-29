@@ -42,9 +42,21 @@ class AppSettingsViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     app = app,
-                    onDailyLimitChange = { limit -> updateApp { it.copy(dailyLimit = limit ?: 0) } },
+                    onDailyLimitChange = { limit ->
+                        updateApp {
+                            it.copy(
+                                dailyLimit = limit ?: 0
+                            )
+                        }
+                    },
                     onOpenDelayChange = { delay -> updateApp { it.copy(openDelay = delay ?: 0) } },
-                    onSessionLimitChange = { limit -> updateApp { it.copy(sessionLimit = limit ?: 0) } },
+                    onSessionLimitChange = { limit ->
+                        updateApp {
+                            it.copy(
+                                sessionLimit = limit ?: 0
+                            )
+                        }
+                    },
                     onHardLockToggle = { locked -> updateApp { it.copy(isHardLocked = locked) } },
                     onRemoveApp = { removeApp() }
                 )

@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 @Composable
 fun ReportScreen() {
     Box(
-        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Report Screen - Coming soon")

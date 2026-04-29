@@ -3,12 +3,11 @@ package io.github.mdsadiqueinam.hidayah.service
 import android.app.Service
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,11 +40,11 @@ class AppTrackerService : Service() {
 
     private fun startTracking() {
         trackingJob = serviceScope.launch {
-            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-            
+            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
+
             repository.getShieldConfig().collectLatest { config ->
                 if (config == null) return@collectLatest
-                
+
                 if (!config.isProtectionActive) {
                     Log.d("AppTrackerService", "Protection is disabled. Skipping tracking.")
                     return@collectLatest
@@ -54,7 +53,12 @@ class AppTrackerService : Service() {
                 val now = System.currentTimeMillis()
                 if (config.pausedUntil > now) {
                     val remainingMs = config.pausedUntil - now
-                    Log.d("AppTrackerService", "Protection is paused. Remaining: ${TimeUnit.MILLISECONDS.toMinutes(remainingMs)}m. Skipping tracking.")
+                    Log.d(
+                        "AppTrackerService",
+                        "Protection is paused. Remaining: ${
+                            TimeUnit.MILLISECONDS.toMinutes(remainingMs)
+                        }m. Skipping tracking."
+                    )
                     return@collectLatest
                 }
 
@@ -64,14 +68,17 @@ class AppTrackerService : Service() {
 
                     val events = usageStatsManager.queryEvents(startTime, endTime)
                     val event = UsageEvents.Event()
-                    
+
                     while (events.hasNextEvent()) {
                         events.getNextEvent(event)
-                        if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                            Log.d("AppTrackerService", "Foreground App Detected: ${event.packageName}")
+                        if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                            Log.d(
+                                "AppTrackerService",
+                                "Foreground App Detected: ${event.packageName}"
+                            )
                         }
                     }
-                    
+
                     delay(500) // Poll every 500ms
                 }
             }

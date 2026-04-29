@@ -4,12 +4,10 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
-import javax.inject.Inject
-
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class AppRepository @Inject constructor(
     private val context: Context,
@@ -21,9 +19,9 @@ class AppRepository @Inject constructor(
         val intent = Intent(Intent.ACTION_MAIN, null).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
-        
+
         val usageStats = getDailyUsageStats()
-        
+
         return (packageManager.queryIntentActivities(intent, 0) ?: emptyList())
             .map { resolveInfo ->
                 val packageName = resolveInfo.activityInfo.packageName
@@ -50,7 +48,8 @@ class AppRepository @Inject constructor(
     }
 
     fun getDailyUsageStats(): Map<String, UsageStats> {
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val usageStatsManager =
+            context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)

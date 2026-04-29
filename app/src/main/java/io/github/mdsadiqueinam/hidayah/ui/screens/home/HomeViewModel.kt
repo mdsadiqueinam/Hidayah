@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
     private val repository: AppRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -73,7 +73,7 @@ class HomeViewModel @Inject constructor(
     init {
         _uiState.update { state ->
             state.copy(
-                onProtectionToggle = { active -> 
+                onProtectionToggle = { active ->
                     updateProtectionStatus(active)
                 },
                 onFocusModeToggle = { active ->
@@ -99,7 +99,7 @@ class HomeViewModel @Inject constructor(
             .onEach { config ->
                 if (config != null) {
                     shieldConfig = config
-                    _uiState.update { 
+                    _uiState.update {
                         it.copy(
                             isProtectionActive = config.isProtectionActive,
                             selectedPauseDuration = config.selectedPauseDuration
@@ -201,7 +201,7 @@ class HomeViewModel @Inject constructor(
 
         val totalTimeMs = filteredStats.values.sumOf { it.totalTimeInForeground }
         val totalTimeHours = totalTimeMs.toDouble() / (1000 * 60 * 60)
-        
+
         val status = if (category == ScreenTimeCategory.TOTAL) {
             when {
                 totalTimeHours < 2 -> "Excellence"
@@ -229,7 +229,7 @@ class HomeViewModel @Inject constructor(
         calendar.set(Calendar.MILLISECOND, 0)
         val dayStart = calendar.timeInMillis
         val dayPassedMs = now - dayStart
-        
+
         val percentage = if (dayPassedMs > 0) (totalTimeMs * 100 / dayPassedMs).toInt() else 0
 
         val topApps = filteredStats.values

@@ -100,7 +100,7 @@ fun AppSelectionDialog(
                         Text("Cancel")
                     }
                     TextButton(
-                        onClick = { 
+                        onClick = {
                             uiState.onSave(uiState.selectedPackages)
                             onDismiss()
                         }
@@ -123,7 +123,7 @@ fun AppRow(
 ) {
     val context = LocalContext.current
     val packageManager = context.packageManager
-    
+
     val icon = remember(packageName) {
         try {
             packageManager.getApplicationIcon(packageName).toBitmap().asImageBitmap()
@@ -152,9 +152,9 @@ fun AppRow(
                 shape = MaterialTheme.shapes.small
             ) {}
         }
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Column(
             modifier = Modifier.weight(1f)
         ) {

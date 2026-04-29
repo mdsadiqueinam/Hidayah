@@ -4,15 +4,55 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.SentimentNeutral
+import androidx.compose.material.icons.filled.SentimentSatisfied
+import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
+import androidx.compose.material.icons.filled.SentimentVerySatisfied
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +73,7 @@ fun HomeScreen(
     viewModel: HomeViewModel? = null
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -48,7 +88,9 @@ fun HomeScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .statusBarsPadding()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,7 +104,7 @@ fun HomeScreen(
             item { PauseProtectionCard(uiState) }
             item { ScreenTimeCard(uiState) }
             item { FocusModeCard(uiState) }
-            
+
             item {
                 ControlledAppsHeader(
                     onAddClick = { showAddDialog = true },
@@ -155,7 +197,7 @@ fun PauseProtectionCard(uiState: HomeUiState) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             val pauseOptions = listOf("5m", "15m", "30m", "1h")
             FlowButton(
                 options = pauseOptions,
@@ -226,9 +268,9 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     HorizontalDivider()
-                    
+
                     Column {
                         Text(
                             "Total screen time",
@@ -246,9 +288,9 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    
+
                     HorizontalDivider()
-                    
+
                     Column {
                         Text(
                             "Controlled screen time",
@@ -277,7 +319,10 @@ fun ScreenTimeCard(uiState: HomeUiState) {
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -288,7 +333,7 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Box {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -327,7 +372,7 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                     }
                 }
             }
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -383,11 +428,15 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Top Apps", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Top Apps",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
                             Icon(
-                                Icons.Default.ChevronRight, 
-                                contentDescription = null, 
-                                modifier = Modifier.size(16.dp), 
+                                Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -405,18 +454,22 @@ fun ScreenTimeCard(uiState: HomeUiState) {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = (index + 1).toString(), 
-                                        fontSize = 10.sp, 
+                                        text = (index + 1).toString(),
+                                        fontSize = 10.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
-                                    Text(app.name, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                                     Text(
-                                        text = app.usage, 
-                                        style = MaterialTheme.typography.labelSmall, 
-                                        fontSize = 8.sp, 
+                                        app.name,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = app.usage,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 8.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
