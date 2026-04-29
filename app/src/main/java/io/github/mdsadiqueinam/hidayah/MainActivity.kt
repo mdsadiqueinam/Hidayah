@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -36,7 +37,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // Start the background tracking service
-        startService(Intent(this, AppTrackerService::class.java))
+        android.util.Log.i("MainActivity", "Starting AppTrackerService as foreground")
+        ContextCompat.startForegroundService(this, Intent(this, AppTrackerService::class.java))
 
         setContent {
             HidayahTheme {

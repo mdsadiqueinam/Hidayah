@@ -1,11 +1,17 @@
 package io.github.mdsadiqueinam.hidayah.service
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.mdsadiqueinam.hidayah.ShieldActivity
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
@@ -37,33 +43,81 @@ class AppTrackerService : Service() {
     private var configCache: ShieldConfig? = null
     private var controlledAppsCache: Map<String, ControlledApp> = emptyMap()
 
+    companion object {
+        private const val CHANNEL_ID = "app_tracker_channel"
+        private const val NOTIFICATION_ID = 1
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        Log.i("AppTrackerService", "Service onCreate called")
+        createNotificationChannel()
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.i("AppTrackerService", "Service onStartCommand called")
+        
+        val notification = createNotification()
+        startForeground(NOTIFICATION_ID, notification)
+
         if (trackingJob == null) {
             startTracking()
         }
         return START_STICKY
     }
 
+    private fun createNotificationChannel() {
+        val name = "App Tracking Service"
+        val descriptionText = "Monitoring app usage for Hidayah"
+        val importance = NotificationManager.IMPORTANCE_LOW
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = descriptionText
+        }
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Hidayah Protection Active")
+            .setContentText("Monitoring app usage to keep you focused")
+            .setSmallIcon(android.R.drawable.ic_menu_info_details)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+    }
+
     private fun startTracking() {
-        Log.d("AppTrackerService", "Tracking is started")
+        Log.i("AppTrackerService", "Tracking is started")
+
+        val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
+        
+        // Check if permission is granted
+        val nowForCheck = System.currentTimeMillis()
+        val testEvents = usageStatsManager.queryEvents(nowForCheck - 1000, nowForCheck)
+        if (!testEvents.hasNextEvent()) {
+            Log.w("AppTrackerService", "No usage events found. Check if 'Usage Access' permission is granted.")
+        }
 
         trackingJob = serviceScope.launch {
 
-            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
             val myPackageName = packageName
 
             // 🔹 Cache config updates
             launch {
                 repository.getShieldConfig().collect {
-                    configCache = it
+                    Log.i("AppTrackerService", "Config updated: $it")
+                    configCache = it ?: ShieldConfig() // Use default if null
                 }
             }
 
             // 🔹 Cache controlled apps (IMPORTANT)
             launch {
                 repository.getControlledApps().collect {
+                    Log.i("AppTrackerService", "Controlled apps updated: ${it.size} apps")
                     controlledAppsCache = it.associateBy { app -> app.packageName }
                 }
             }
@@ -149,7 +203,7 @@ class AppTrackerService : Service() {
         if (lastShieldTriggeredPackage == packageName) return
         lastShieldTriggeredPackage = packageName
 
-        Log.d("AppTrackerService", "Triggering shield for $packageName")
+        Log.i("AppTrackerService", "Triggering shield for $packageName")
 
         val intent = Intent(this, ShieldActivity::class.java).apply {
             putExtra("packageName", packageName)
@@ -160,7 +214,7 @@ class AppTrackerService : Service() {
     }
 
     override fun onDestroy() {
-        Log.d("AppTrackerService", "Tracking is stopped")
+        Log.i("AppTrackerService", "Tracking is stopped")
 
         super.onDestroy()
         serviceScope.cancel()
