@@ -8,5 +8,8 @@ data class ShieldConfig(
     @PrimaryKey val id: Int = 1, // Singleton entry
     val headline: String = "",
     val subHeadline: String = "",
-    val imagePath: String? = null
+    val imagePath: String? = null,
+    val isProtectionActive: Boolean = true,
+    val selectedPauseDuration: String? = null,
+    val pausedUntil: Long = 0L // Timestamp when pause ends
 )

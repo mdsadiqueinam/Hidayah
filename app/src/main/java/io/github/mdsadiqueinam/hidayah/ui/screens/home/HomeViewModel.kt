@@ -9,10 +9,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -64,18 +68,19 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private var rawControlledApps: List<ControlledApp> = emptyList()
+    private var shieldConfig: ShieldConfig = ShieldConfig()
 
     init {
         _uiState.update { state ->
             state.copy(
                 onProtectionToggle = { active -> 
-                    _uiState.update { it.copy(isProtectionActive = active) }
+                    updateProtectionStatus(active)
                 },
                 onFocusModeToggle = { active ->
                     _uiState.update { it.copy(isFocusModeActive = active) }
                 },
                 onPauseDurationChange = { duration ->
-                    _uiState.update { it.copy(selectedPauseDuration = duration) }
+                    updatePauseDuration(duration)
                 },
                 onScreenTimeCategoryChange = { category ->
                     _uiState.update { it.copy(selectedScreenTimeCategory = category) }
@@ -83,9 +88,64 @@ class HomeViewModel @Inject constructor(
                 }
             )
         }
+        observeShieldConfig()
         observeControlledApps()
         checkPermission()
         startStatsRefresh()
+    }
+
+    private fun observeShieldConfig() {
+        repository.getShieldConfig()
+            .onEach { config ->
+                if (config != null) {
+                    shieldConfig = config
+                    _uiState.update { 
+                        it.copy(
+                            isProtectionActive = config.isProtectionActive,
+                            selectedPauseDuration = config.selectedPauseDuration
+                        )
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun updateProtectionStatus(active: Boolean) {
+        val newConfig = shieldConfig.copy(isProtectionActive = active)
+        saveShieldConfig(newConfig)
+    }
+
+    private fun updatePauseDuration(duration: String?) {
+        val pausedUntil = if (duration != null) {
+            System.currentTimeMillis() + parsePauseDuration(duration)
+        } else {
+            0L
+        }
+        val newConfig = shieldConfig.copy(
+            selectedPauseDuration = duration,
+            pausedUntil = pausedUntil
+        )
+        saveShieldConfig(newConfig)
+    }
+
+    private fun parsePauseDuration(duration: String): Long {
+        return try {
+            val value = duration.dropLast(1).toLong()
+            val unit = duration.last()
+            when (unit) {
+                'm' -> TimeUnit.MINUTES.toMillis(value)
+                'h' -> TimeUnit.HOURS.toMillis(value)
+                else -> 0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
+    private fun saveShieldConfig(config: ShieldConfig) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateShieldConfig(config)
+        }
     }
 
     private fun checkPermission() {
