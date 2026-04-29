@@ -56,7 +56,7 @@ fun ShieldContent(
     onOpenClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val onColor = if (editable) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onBackground
+    val onColor = MaterialTheme.colorScheme.inverseOnSurface
     val inputBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
     val accentColor = MaterialTheme.colorScheme.tertiary
 
