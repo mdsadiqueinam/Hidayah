@@ -1,57 +1,36 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.settings
 
-import android.graphics.ImageDecoder
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import io.github.mdsadiqueinam.hidayah.ui.components.ShieldCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,10 +67,11 @@ fun ShieldSettingsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            CustomizeShieldCard(
+            ShieldCard(
                 headline = uiState.config.headline,
                 subHeadline = uiState.config.subHeadline,
                 imagePath = uiState.config.imagePath,
+                editable = true,
                 onHeadlineChange = uiState.onHeadlineChange,
                 onSubHeadlineChange = uiState.onSubHeadlineChange,
                 onImageClick = { imagePickerLauncher.launch("image/*") }
@@ -103,7 +83,7 @@ fun ShieldSettingsScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                border = borderStroke()
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f))
             ) {
                 Text(
                     "Use Default Shield",
@@ -112,206 +92,5 @@ fun ShieldSettingsScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun borderStroke() =
-    androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f))
-
-@Composable
-fun CustomizeShieldCard(
-    headline: String,
-    subHeadline: String,
-    imagePath: String?,
-    onHeadlineChange: (String) -> Unit,
-    onSubHeadlineChange: (String) -> Unit,
-    onImageClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val cardBackground = MaterialTheme.colorScheme.inverseSurface
-    val inputBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-    val accentColor = MaterialTheme.colorScheme.tertiary
-    val onCardColor = MaterialTheme.colorScheme.inverseOnSurface
-
-    val bitmap = remember(imagePath) {
-        if (imagePath != null) {
-            try {
-                val uri = imagePath.toUri()
-                val source = ImageDecoder.createSource(context.contentResolver, uri)
-                ImageDecoder.decodeBitmap(source)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
-            null
-        }
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(48.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackground)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Circle placeholder for image
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(onCardColor.copy(alpha = 0.1f))
-                    .clickable { onImageClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                if (bitmap != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Tap on circle to add image",
-                color = onCardColor.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.bodySmall,
-                fontSize = 12.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Headline Input Box (Stylized)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = inputBackground
-            ) {
-                BasicTextField(
-                    value = headline,
-                    onValueChange = onHeadlineChange,
-                    placeholder = "Pause. Think. Decide.",
-                    textStyle = MaterialTheme.typography.headlineSmall.copy(
-                        color = onCardColor,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(20.dp),
-                    cursorColor = onCardColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sub-headline Input Box (Stylized)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = inputBackground
-            ) {
-                BasicTextField(
-                    value = subHeadline,
-                    onValueChange = onSubHeadlineChange,
-                    placeholder = "Take a breath before opening this app.",
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = onCardColor.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.padding(20.dp),
-                    cursorColor = onCardColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "App Name",
-                style = MaterialTheme.typography.titleLarge,
-                color = onCardColor,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Today's Usage: 42m",
-                style = MaterialTheme.typography.bodyMedium,
-                color = onCardColor.copy(alpha = 0.8f)
-            )
-
-            Text(
-                text = "Open Attempts: 3",
-                style = MaterialTheme.typography.bodyMedium,
-                color = onCardColor.copy(alpha = 0.8f)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Buttons
-            Button(
-                onClick = { /* Close */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = accentColor,
-                    contentColor = MaterialTheme.colorScheme.onTertiary
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text("Close", fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedButton(
-                onClick = { /* Open */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, accentColor),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor)
-            ) {
-                Text("Open", fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-}
-
-@Composable
-fun BasicTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    textStyle: androidx.compose.ui.text.TextStyle,
-    modifier: Modifier = Modifier,
-    cursorColor: Color = Color.Unspecified
-) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (value.isEmpty()) {
-            Text(
-                text = placeholder,
-                style = textStyle.copy(color = textStyle.color.copy(alpha = 0.4f)),
-                textAlign = TextAlign.Center
-            )
-        }
-        androidx.compose.foundation.text.BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = textStyle,
-            modifier = Modifier.fillMaxWidth(),
-            cursorBrush = androidx.compose.ui.graphics.SolidColor(cursorColor)
-        )
     }
 }

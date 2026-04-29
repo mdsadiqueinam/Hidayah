@@ -15,6 +15,7 @@ import io.github.mdsadiqueinam.hidayah.ui.screens.home.HomeViewModel
 import io.github.mdsadiqueinam.hidayah.ui.screens.report.ReportScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.settings.SettingsScreen
 import io.github.mdsadiqueinam.hidayah.ui.screens.settings.ShieldSettingsScreen
+import io.github.mdsadiqueinam.hidayah.ui.screens.shield.ShieldScreen
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -23,6 +24,9 @@ sealed class Screen(val route: String) {
     object ShieldSettings : Screen("shield_settings")
     object AppSettings : Screen("app_settings/{packageName}") {
         fun createRoute(packageName: String) = "app_settings/$packageName"
+    }
+    object Shield : Screen("shield/{packageName}") {
+        fun createRoute(packageName: String) = "shield/$packageName"
     }
 }
 
@@ -61,6 +65,15 @@ fun NavGraph(navController: NavHostController) {
             arguments = listOf(navArgument("packageName") { type = NavType.StringType })
         ) {
             AppSettingsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = Screen.Shield.route,
+            arguments = listOf(navArgument("packageName") { type = NavType.StringType })
+        ) {
+            ShieldScreen(
+                onClose = { navController.popBackStack() },
+                onOpen = { navController.popBackStack() }
+            )
         }
     }
 }
