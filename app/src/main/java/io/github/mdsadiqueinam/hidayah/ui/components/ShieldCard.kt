@@ -1,9 +1,6 @@
 package io.github.mdsadiqueinam.hidayah.ui.components
 
 import android.graphics.ImageDecoder
-import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -45,6 +42,7 @@ fun ShieldCard(
     headline: String,
     subHeadline: String,
     imagePath: String?,
+    modifier: Modifier = Modifier,
     appName: String = "App Name",
     usage: String = "0m",
     attempts: Int = 0,
@@ -54,7 +52,6 @@ fun ShieldCard(
     onImageClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
     onOpenClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val cardBackground = MaterialTheme.colorScheme.inverseSurface
@@ -66,13 +63,8 @@ fun ShieldCard(
         if (imagePath != null) {
             try {
                 val uri = imagePath.toUri()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    val source = ImageDecoder.createSource(context.contentResolver, uri)
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    @Suppress("DEPRECATION")
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                }
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                ImageDecoder.decodeBitmap(source)
             } catch (e: Exception) {
                 null
             }
