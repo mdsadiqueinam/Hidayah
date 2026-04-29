@@ -29,6 +29,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ShieldActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Hidayah" />
+
         <service
             android:name=".service.AppTrackerService"
             android:enabled="true"

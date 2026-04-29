@@ -29,9 +29,6 @@ import io.github.mdsadiqueinam.hidayah.ui.navigation.NavGraph
 import io.github.mdsadiqueinam.hidayah.ui.navigation.Screen
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
-import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.NavHostController
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             HidayahTheme {
-                MainScreen(intent)
+                MainScreen()
             }
         }
     }
@@ -55,19 +52,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(intent: Intent) {
+fun MainScreen() {
     val navController = rememberNavController()
     
-    LaunchedEffect(intent) {
-        val packageName = intent.getStringExtra("show_shield")
-        if (packageName != null) {
-            navController.navigate(Screen.Shield.createRoute(packageName)) {
-                // Clear backstack to avoid multiple shields
-                popUpTo(Screen.Home.route) { inclusive = false }
-            }
-        }
-    }
-
     val items = listOf(
         Screen.Home,
         Screen.Report,

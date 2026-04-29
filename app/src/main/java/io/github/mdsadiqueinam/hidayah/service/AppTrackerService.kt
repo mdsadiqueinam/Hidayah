@@ -7,18 +7,18 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.mdsadiqueinam.hidayah.MainActivity
+import io.github.mdsadiqueinam.hidayah.ShieldActivity
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
+import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -29,10 +29,13 @@ class AppTrackerService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var trackingJob: Job? = null
-    
+
     private var currentPackageName: String? = null
     private var sessionStartTime: Long = 0L
     private var lastShieldTriggeredPackage: String? = null
+
+    private var configCache: ShieldConfig? = null
+    private var controlledAppsCache: Map<String, ControlledApp> = emptyMap()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -45,73 +48,91 @@ class AppTrackerService : Service() {
 
     private fun startTracking() {
         trackingJob = serviceScope.launch {
+
             val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
             val myPackageName = packageName
 
-            repository.getShieldConfig().collectLatest { config ->
-                if (config == null) return@collectLatest
+            // 🔹 Cache config updates
+            launch {
+                repository.getShieldConfig().collect {
+                    configCache = it
+                }
+            }
 
-                if (!config.isProtectionActive) {
-                    Log.d("AppTrackerService", "Protection is disabled. Skipping tracking.")
-                    resetSession()
-                    return@collectLatest
+            // 🔹 Cache controlled apps (IMPORTANT)
+            launch {
+                repository.getControlledApps().collect {
+                    controlledAppsCache = it.associateBy { app -> app.packageName }
+                }
+            }
+
+            while (isActive) {
+
+                val config = configCache
+                val now = System.currentTimeMillis()
+
+                if (config == null) {
+                    delay(500)
+                    continue
                 }
 
-                while (isActive) {
-                    val now = System.currentTimeMillis()
-                    
-                    // Check if paused
-                    if (config.pausedUntil > now) {
-                        delay(1000)
-                        continue
+                if (!config.isProtectionActive || config.pausedUntil > now) {
+                    resetSession()
+                    delay(1000)
+                    continue
+                }
+
+                val endTime = now
+                val startTime = endTime - 2000
+
+                val events = usageStatsManager.queryEvents(startTime, endTime)
+                val event = UsageEvents.Event()
+
+                var latestResumedPackage: String? = null
+
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event)
+                    if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                        latestResumedPackage = event.packageName
                     }
+                }
 
-                    val endTime = System.currentTimeMillis()
-                    val startTime = endTime - 1000 // Last 1000ms
+                if (latestResumedPackage != null &&
+                    latestResumedPackage != myPackageName &&
+                    latestResumedPackage != "io.github.mdsadiqueinam.hidayah"
+                ) {
 
-                    val events = usageStatsManager.queryEvents(startTime, endTime)
-                    val event = UsageEvents.Event()
+                    // 🔹 NEW APP OPENED
+                    if (latestResumedPackage != currentPackageName) {
+                        currentPackageName = latestResumedPackage
+                        sessionStartTime = now
+                        lastShieldTriggeredPackage = null
 
-                    var latestResumedPackage: String? = null
-                    while (events.hasNextEvent()) {
-                        events.getNextEvent(event)
-                        if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
-                            latestResumedPackage = event.packageName
+                        val app = controlledAppsCache[currentPackageName]
+
+                        if (app != null) {
+                            triggerShield(currentPackageName!!)
+                            delay(300) // prevent rapid re-trigger
+                            continue
                         }
                     }
 
-                    if (latestResumedPackage != null && latestResumedPackage != myPackageName) {
-                        if (latestResumedPackage != currentPackageName) {
-                            // New app opened (Switch detected)
-                            currentPackageName = latestResumedPackage
-                            sessionStartTime = now
-                            lastShieldTriggeredPackage = null // Reset for new session
-                            
-                            Log.d("AppTrackerService", "New session detected: $currentPackageName")
-                            
-                            // 1. INSTANT SHIELD: Trigger immediately if app is controlled
-                            val controlledApp = repository.getControlledApp(currentPackageName!!)
-                            if (controlledApp != null) {
+                    // 🔹 SAME APP → SESSION LIMIT CHECK
+                    else {
+                        val app = controlledAppsCache[currentPackageName]
+
+                        if (app != null && app.sessionLimit > 0) {
+
+                            val sessionDuration = now - sessionStartTime
+
+                            if (sessionDuration >= app.sessionLimit * 60_000) {
                                 triggerShield(currentPackageName!!)
                             }
-                        } else {
-                            // Still in the same app, check for SESSION LIMIT
-                            val controlledApp = repository.getControlledApp(currentPackageName!!)
-                            if (controlledApp != null && controlledApp.sessionLimit > 0) {
-                                val sessionDurationMinutes = TimeUnit.MILLISECONDS.toMinutes(now - sessionStartTime)
-                                if (sessionDurationMinutes >= controlledApp.sessionLimit) {
-                                    // 2. SESSION LIMIT REACHED: Trigger shield if not already triggered for this limit
-                                    if (lastShieldTriggeredPackage != currentPackageName) {
-                                        triggerShield(currentPackageName!!)
-                                        lastShieldTriggeredPackage = currentPackageName
-                                    }
-                                }
-                            }
                         }
                     }
-
-                    delay(500) // Poll every 500ms
                 }
+
+                delay(250)
             }
         }
     }
@@ -123,12 +144,17 @@ class AppTrackerService : Service() {
     }
 
     private fun triggerShield(packageName: String) {
-        Log.d("AppTrackerService", "Session limit reached for $packageName. Triggering shield.")
-        val intent = Intent(this, MainActivity::class.java).apply {
-            putExtra("show_shield", packageName)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
+        if (lastShieldTriggeredPackage == packageName) return
+        lastShieldTriggeredPackage = packageName
+
+        Log.d("AppTrackerService", "Triggering shield for $packageName")
+
+        val intent = Intent(this, ShieldActivity::class.java).apply {
+            putExtra("packageName", packageName)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
+
         startActivity(intent)
     }
 
