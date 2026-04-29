@@ -2,6 +2,7 @@ package io.github.mdsadiqueinam.hidayah
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,17 +15,21 @@ class ShieldActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
+        // checking packageName exists
         val packageName = intent.getStringExtra("packageName") ?: run {
             finish()
             return
         }
 
+        showShield()
+    }
+
+    private fun showShield() {
         setContent {
             HidayahTheme {
                 ShieldScreen(
                     onClose = {
-                        // Effectively "closes" the target app by taking user to Home screen
                         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
                             addCategory(Intent.CATEGORY_HOME)
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -33,11 +38,16 @@ class ShieldActivity : ComponentActivity() {
                         finish()
                     },
                     onOpen = {
-                        // Dismiss the shield and allow the user to see the app behind it
                         finish()
                     }
                 )
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        showShield()
     }
 }
