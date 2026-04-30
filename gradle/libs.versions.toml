@@ -13,6 +13,7 @@ kotlin = "2.3.21"
 composeBom = "2026.04.01"
 hilt = "2.59.2"
 coil = "3.4.0"
+detekt = "2.0.0-alpha.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,3 +46,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 googleDevtoolsKsp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
