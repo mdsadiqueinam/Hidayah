@@ -724,3 +724,39 @@ fun MindfulQuoteCard() {
         }
     }
 }
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    val mockUiState = HomeUiState(
+        totalScreenTime = "3h 15m",
+        controlledScreenTime = "1h 20m",
+        totalScreenTimeMs = java.util.concurrent.TimeUnit.HOURS.toMillis(3) + java.util.concurrent.TimeUnit.MINUTES.toMillis(15),
+        screenTimeLimit = "5h 0m",
+        screenTimeLimitMs = java.util.concurrent.TimeUnit.HOURS.toMillis(5),
+        screenTimeStatus = "Excellent",
+        isProtectionActive = true,
+        selectedPauseDuration = null,
+        topApps = listOf(
+            TopApp("Instagram", "1h 12m", "Social", "com.instagram.android"),
+            TopApp("YouTube", "54m", "Entertainment", "com.google.android.youtube"),
+            TopApp("TikTok", "48m", "Short Video", "com.zhiliaoapp.musically")
+        ),
+        controlledApps = listOf(
+            ControlledAppWithUsage(
+                io.github.mdsadiqueinam.hidayah.data.ControlledApp("com.facebook.katana", "Facebook"),
+                "22m",
+                "20m"
+            ),
+            ControlledAppWithUsage(
+                io.github.mdsadiqueinam.hidayah.data.ControlledApp("com.whatsapp", "WhatsApp"),
+                "45m",
+                "15m"
+            )
+        )
+    )
+
+    io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme {
+        HomeScreen(uiState = mockUiState)
+    }
+}
