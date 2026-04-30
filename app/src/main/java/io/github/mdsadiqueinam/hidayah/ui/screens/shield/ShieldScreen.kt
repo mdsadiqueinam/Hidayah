@@ -41,6 +41,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
 
@@ -57,6 +65,33 @@ fun ShieldScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val shieldImage = rememberShieldImage(uiState.shieldConfig.imagePath)
+    val context = LocalContext.current
+
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            repeatMode = Player.REPEAT_MODE_ALL
+            playWhenReady = true
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    LaunchedEffect(uiState.shieldConfig.useVideo, uiState.shieldConfig.videoPath, uiState.shieldConfig.audioPath) {
+        if (uiState.shieldConfig.useVideo && uiState.shieldConfig.videoPath != null) {
+            exoPlayer.setMediaItem(MediaItem.fromUri(uiState.shieldConfig.videoPath!!))
+            exoPlayer.prepare()
+        } else if (!uiState.shieldConfig.useVideo && uiState.shieldConfig.audioPath != null) {
+            exoPlayer.setMediaItem(MediaItem.fromUri(uiState.shieldConfig.audioPath!!))
+            exoPlayer.prepare()
+        } else {
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -64,10 +99,34 @@ fun ShieldScreen(
             .background(Color.Black)
             .then(modifier)
     ) {
-        ShieldBackgroundImage(shieldImage)
+        if (uiState.shieldConfig.useVideo && uiState.shieldConfig.videoPath != null) {
+            ShieldVideoBackground(exoPlayer)
+        } else {
+            ShieldBackgroundImage(shieldImage)
+        }
         ShieldGradientOverlay()
         ShieldContentColumn(uiState, onClose, onOpen)
     }
+}
+
+@Composable
+private fun ShieldVideoBackground(exoPlayer: ExoPlayer, modifier: Modifier = Modifier) {
+    AndroidView(
+        factory = {
+            PlayerView(it).apply {
+                player = exoPlayer
+                useController = false
+                resizeMode = androidx.media3.ui.AspectRatioWidget.RESIZE_MODE_ZOOM
+            }
+        },
+        modifier = modifier
+            .fillMaxSize()
+            .alpha(BACKGROUND_IMAGE_ALPHA)
+            .drawWithContent {
+                drawContent()
+                drawRect(Color.Black.copy(alpha = BACKGROUND_OVERLAY_ALPHA))
+            }
+    )
 }
 
 @Composable

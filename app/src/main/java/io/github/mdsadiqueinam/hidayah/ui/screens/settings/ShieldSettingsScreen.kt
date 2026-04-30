@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,8 +19,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,14 +40,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
-import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +74,18 @@ fun ShieldSettingsScreenContent(
         uri?.let { uiState.onImageSelected(ShieldImage.UriImage(it.toString())) }
     }
 
+    val videoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let { uiState.onVideoSelected(it.toString()) }
+    }
+
+    val audioPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let { uiState.onAudioSelected(it.toString()) }
+    }
+
     val defaultShieldImages = remember {
         defaultShieldImageResources.map { ShieldImage.Resource(it) }
     }
@@ -91,7 +103,15 @@ fun ShieldSettingsScreenContent(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             item { ShieldSettingsHeader() }
-            item { ShieldContentEditor(uiState, imagePickerLauncher, defaultShieldImages) }
+            item {
+                ShieldContentEditor(
+                    uiState = uiState,
+                    imagePickerLauncher = imagePickerLauncher,
+                    videoPickerLauncher = videoPickerLauncher,
+                    audioPickerLauncher = audioPickerLauncher,
+                    defaultShieldImages = defaultShieldImages
+                )
+            }
             item { ShieldLivePreview(uiState) }
         }
     }
@@ -164,12 +184,20 @@ private fun ShieldSettingsHeader(modifier: Modifier = Modifier) {
 private fun ShieldContentEditor(
     uiState: ShieldSettingsUiState,
     imagePickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    videoPickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    audioPickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     defaultShieldImages: List<ShieldImage>,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
         ShieldContentCard(uiState)
-        ShieldImageSelectorCard(uiState, imagePickerLauncher, defaultShieldImages)
+        ShieldBackgroundSelectorCard(
+            uiState = uiState,
+            imagePickerLauncher = imagePickerLauncher,
+            videoPickerLauncher = videoPickerLauncher,
+            audioPickerLauncher = audioPickerLauncher,
+            defaultShieldImages = defaultShieldImages
+        )
         ShieldActionButtons(uiState)
     }
 }
@@ -204,17 +232,74 @@ private fun ShieldContentCard(
 }
 
 @Composable
-private fun ShieldImageSelectorCard(
+private fun ShieldBackgroundSelectorCard(
     uiState: ShieldSettingsUiState,
     imagePickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    videoPickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    audioPickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     defaultShieldImages: List<ShieldImage>,
     modifier: Modifier = Modifier
 ) {
     SectionCard(
         modifier = modifier,
         icon = Icons.Default.Image,
-        title = "Shield Image",
-        trailing = {
+        title = "Shield Background"
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+            ModeSegmentedControl(
+                useVideo = uiState.config.useVideo,
+                onUseVideoToggle = uiState.onUseVideoToggle
+            )
+
+            if (uiState.config.useVideo) {
+                MediaPickerCard(
+                    title = "Background Video",
+                    icon = Icons.Default.VideoLibrary,
+                    path = uiState.config.videoPath,
+                    onPick = { videoPickerLauncher.launch("video/*") },
+                    onClear = { uiState.onVideoSelected(null) }
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Text(
+                        text = "Static Image",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ShieldImageSelectorCardContent(uiState, imagePickerLauncher, defaultShieldImages)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Ambient Audio",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    MediaPickerCard(
+                        title = "Background Audio",
+                        icon = Icons.Default.MusicNote,
+                        path = uiState.config.audioPath,
+                        onPick = { audioPickerLauncher.launch("audio/*") },
+                        onClear = { uiState.onAudioSelected(null) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShieldImageSelectorCardContent(
+    uiState: ShieldSettingsUiState,
+    imagePickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    defaultShieldImages: List<ShieldImage>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
             Button(
                 onClick = { imagePickerLauncher.launch("image/*") },
                 colors = ButtonDefaults.buttonColors(
@@ -224,32 +309,11 @@ private fun ShieldImageSelectorCard(
                 shape = CircleShape,
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Icon(
-                    Icons.Default.Upload,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
+                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Upload", style = MaterialTheme.typography.labelLarge)
             }
         }
-    ) {
         ShieldImageSelector(uiState, defaultShieldImages)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ShieldSettingsScreenPreview() {
-    HidayahTheme {
-        ShieldSettingsScreenContent(
-            onBack = {},
-            uiState = ShieldSettingsUiState(
-                config = ShieldConfig(
-                    headline = "Peace of Mind",
-                    subHeadline = "Your sanctuary is active. Take a deep breath."
-                )
-            )
-        )
     }
 }

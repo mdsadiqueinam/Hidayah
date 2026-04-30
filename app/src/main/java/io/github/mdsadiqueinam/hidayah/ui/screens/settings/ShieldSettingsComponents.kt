@@ -21,11 +21,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,6 +36,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +47,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioWidget
+import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 
@@ -275,6 +288,33 @@ fun ShieldPreviewBox(
     uiState: ShieldSettingsUiState,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            repeatMode = Player.REPEAT_MODE_ALL
+            playWhenReady = true
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    LaunchedEffect(uiState.config.useVideo, uiState.config.videoPath, uiState.config.audioPath) {
+        if (uiState.config.useVideo && uiState.config.videoPath != null) {
+            exoPlayer.setMediaItem(MediaItem.fromUri(uiState.config.videoPath))
+            exoPlayer.prepare()
+        } else if (!uiState.config.useVideo && uiState.config.audioPath != null) {
+            exoPlayer.setMediaItem(MediaItem.fromUri(uiState.config.audioPath))
+            exoPlayer.prepare()
+        } else {
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -287,21 +327,35 @@ fun ShieldPreviewBox(
                 RoundedCornerShape(32.dp)
             )
     ) {
-        // Shield Background
-        AsyncImage(
-            model = when (val image = uiState.selectedImage) {
-                is ShieldImage.Resource -> image.resId
-                is ShieldImage.UriImage -> image.uri
-            },
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .drawWithContent {
-                    drawContent()
-                    drawRect(Color.Black.copy(alpha = 0.4f))
-                }
-        )
+        if (uiState.config.useVideo && uiState.config.videoPath != null) {
+            AndroidView(
+                factory = {
+                    PlayerView(it).apply {
+                        player = exoPlayer
+                        useController = false
+                        resizeMode = AspectRatioWidget.RESIZE_MODE_ZOOM
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Shield Background Image
+            AsyncImage(
+                model = when (val image = uiState.selectedImage) {
+                    is ShieldImage.Resource -> image.resId
+                    is ShieldImage.UriImage -> image.uri
+                },
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawWithContent {
+                        drawContent()
+                        drawRect(Color.Black.copy(alpha = 0.4f))
+                    }
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -318,6 +372,104 @@ fun ShieldPreviewBox(
 
         // Shield Content
         ShieldPreviewContent(uiState)
+    }
+}
+
+@Composable
+fun ModeSegmentedControl(
+    useVideo: Boolean,
+    onUseVideoToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            val modes = listOf(false to "Image + Audio", true to "Video Only")
+            modes.forEach { (mode, label) ->
+                val isSelected = useVideo == mode
+                Surface(
+                    onClick = { onUseVideoToggle(mode) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = label,
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MediaPickerCard(
+    title: String,
+    icon: ImageVector,
+    path: String?,
+    onPick: () -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onPick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (path != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = if (path != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (path != null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = if (path != null) "Media Selected" else "Tap to choose file",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (path != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (path != null) {
+                IconButton(onClick = onClear) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Selected",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
     }
 }
 

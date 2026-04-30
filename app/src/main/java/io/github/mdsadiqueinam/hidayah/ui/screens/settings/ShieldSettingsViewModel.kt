@@ -16,13 +16,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 data class ShieldSettingsUiState(
     val config: ShieldConfig = ShieldConfig(),
     val selectedImage: ShieldImage = ShieldImage.Resource(defaultShieldImageResources.first()),
     val onHeadlineChange: (String) -> Unit = {},
     val onSubHeadlineChange: (String) -> Unit = {},
     val onImageSelected: (ShieldImage) -> Unit = {},
+    val onVideoSelected: (String?) -> Unit = {},
+    val onAudioSelected: (String?) -> Unit = {},
+    val onUseVideoToggle: (Boolean) -> Unit = {},
     val onResetToDefaults: () -> Unit = {},
     val onSave: () -> Unit = {}
 )
@@ -54,16 +56,33 @@ class ShieldSettingsViewModel @Inject constructor(
                 onHeadlineChange = { updateHeadline(it) },
                 onSubHeadlineChange = { updateSubHeadline(it) },
                 onImageSelected = { updateSelectedImage(it) },
+                onVideoSelected = { updateVideo(it) },
+                onAudioSelected = { updateAudio(it) },
+                onUseVideoToggle = { updateUseVideo(it) },
                 onResetToDefaults = { resetToDefaults() },
                 onSave = { saveConfig() }
             )
         }
     }
+...
+    private fun updateSubHeadline(subHeadline: String) {
+        _uiState.update { it.copy(config = it.config.copy(subHeadline = subHeadline)) }
+    }
 
-    private fun parseImagePath(path: String?): ShieldImage {
-        if (path.isNullOrBlank()) return ShieldImage.Resource(defaultShieldImageResources.first())
+    private fun updateVideo(videoPath: String?) {
+        _uiState.update { it.copy(config = it.config.copy(videoPath = videoPath)) }
+    }
 
-        return if (path.startsWith("res:")) {
+    private fun updateAudio(audioPath: String?) {
+        _uiState.update { it.copy(config = it.config.copy(audioPath = audioPath)) }
+    }
+
+    private fun updateUseVideo(useVideo: Boolean) {
+        _uiState.update { it.copy(config = it.config.copy(useVideo = useVideo)) }
+    }
+
+    private fun updateSelectedImage(image: ShieldImage) {
+
             val resId = path.substringAfter("res:").toIntOrNull()
             if (resId != null) ShieldImage.Resource(resId)
             else ShieldImage.Resource(defaultShieldImageResources.first())

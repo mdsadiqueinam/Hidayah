@@ -9,6 +9,9 @@ data class ShieldConfig(
     val headline: String = "",
     val subHeadline: String = "",
     val imagePath: String? = null,
+    val useVideo: Boolean = false,
+    val videoPath: String? = null,
+    val audioPath: String? = null,
     val isProtectionActive: Boolean = true,
     val selectedPauseDuration: String? = null,
     val pausedUntil: Long = 0L // Timestamp when pause ends
