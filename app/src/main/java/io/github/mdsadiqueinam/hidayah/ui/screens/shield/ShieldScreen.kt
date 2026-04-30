@@ -56,7 +56,7 @@ fun ShieldScreen(
     val shieldImage = remember(uiState.shieldConfig.imagePath) {
         val path = uiState.shieldConfig.imagePath
         when {
-            path == null -> ShieldImage.Resource(defaultShieldImageResources.first())
+            path.isNullOrBlank() -> ShieldImage.Resource(defaultShieldImageResources.first())
             path.startsWith("res:") -> {
                 val resId = path.substringAfter("res:").toIntOrNull()
                 if (resId != null) ShieldImage.Resource(resId)

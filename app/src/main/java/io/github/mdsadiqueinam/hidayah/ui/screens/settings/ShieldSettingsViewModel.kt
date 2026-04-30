@@ -61,7 +61,7 @@ class ShieldSettingsViewModel @Inject constructor(
     }
 
     private fun parseImagePath(path: String?): ShieldImage {
-        if (path == null) return ShieldImage.Resource(defaultShieldImageResources.first())
+        if (path.isNullOrBlank()) return ShieldImage.Resource(defaultShieldImageResources.first())
         
         return if (path.startsWith("res:")) {
             val resId = path.substringAfter("res:").toIntOrNull()
