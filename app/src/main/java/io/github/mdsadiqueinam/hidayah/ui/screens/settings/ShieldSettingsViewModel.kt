@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.data.ShieldImage
+import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,10 +19,12 @@ import javax.inject.Inject
 
 data class ShieldSettingsUiState(
     val config: ShieldConfig = ShieldConfig(),
+    val selectedImage: ShieldImage = ShieldImage.Resource(defaultShieldImageResources.first()),
     val onHeadlineChange: (String) -> Unit = {},
     val onSubHeadlineChange: (String) -> Unit = {},
-    val onImageSelected: (String) -> Unit = {},
-    val onUseDefault: () -> Unit = {}
+    val onImageSelected: (ShieldImage) -> Unit = {},
+    val onResetToDefaults: () -> Unit = {},
+    val onSave: () -> Unit = {}
 )
 
 @HiltViewModel
@@ -35,7 +39,12 @@ class ShieldSettingsViewModel @Inject constructor(
         repository.getShieldConfig()
             .onEach { config ->
                 if (config != null) {
-                    _uiState.update { it.copy(config = config) }
+                    _uiState.update { state ->
+                        state.copy(
+                            config = config,
+                            selectedImage = parseImagePath(config.imagePath)
+                        )
+                    }
                 }
             }
             .launchIn(viewModelScope)
@@ -44,39 +53,59 @@ class ShieldSettingsViewModel @Inject constructor(
             state.copy(
                 onHeadlineChange = { updateHeadline(it) },
                 onSubHeadlineChange = { updateSubHeadline(it) },
-                onImageSelected = { updateImagePath(it) },
-                onUseDefault = { useDefault() }
+                onImageSelected = { updateSelectedImage(it) },
+                onResetToDefaults = { resetToDefaults() },
+                onSave = { saveConfig() }
             )
         }
     }
 
+    private fun parseImagePath(path: String?): ShieldImage {
+        if (path == null) return ShieldImage.Resource(defaultShieldImageResources.first())
+        
+        return if (path.startsWith("res:")) {
+            val resId = path.substringAfter("res:").toIntOrNull()
+            if (resId != null) ShieldImage.Resource(resId)
+            else ShieldImage.Resource(defaultShieldImageResources.first())
+        } else {
+            ShieldImage.UriImage(path)
+        }
+    }
+
     private fun updateHeadline(headline: String) {
-        val newConfig = _uiState.value.config.copy(headline = headline)
-        _uiState.update { it.copy(config = newConfig) }
-        saveConfig(newConfig)
+        _uiState.update { it.copy(config = it.config.copy(headline = headline)) }
     }
 
     private fun updateSubHeadline(subHeadline: String) {
-        val newConfig = _uiState.value.config.copy(subHeadline = subHeadline)
-        _uiState.update { it.copy(config = newConfig) }
-        saveConfig(newConfig)
+        _uiState.update { it.copy(config = it.config.copy(subHeadline = subHeadline)) }
     }
 
-    private fun updateImagePath(path: String) {
-        val newConfig = _uiState.value.config.copy(imagePath = path)
-        _uiState.update { it.copy(config = newConfig) }
-        saveConfig(newConfig)
+    private fun updateSelectedImage(image: ShieldImage) {
+        val path = when (image) {
+            is ShieldImage.Resource -> "res:${image.resId}"
+            is ShieldImage.UriImage -> image.uri
+        }
+        _uiState.update { 
+            it.copy(
+                selectedImage = image,
+                config = it.config.copy(imagePath = path)
+            ) 
+        }
     }
 
-    private fun useDefault() {
+    private fun resetToDefaults() {
         val defaultConfig = ShieldConfig()
-        _uiState.update { it.copy(config = defaultConfig) }
-        saveConfig(defaultConfig)
+        _uiState.update { 
+            it.copy(
+                config = defaultConfig,
+                selectedImage = parseImagePath(defaultConfig.imagePath)
+            ) 
+        }
     }
 
-    private fun saveConfig(config: ShieldConfig) {
+    private fun saveConfig() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateShieldConfig(config)
+            repository.updateShieldConfig(_uiState.value.config)
         }
     }
 }
