@@ -116,7 +116,7 @@ private fun ShieldVideoBackground(exoPlayer: ExoPlayer, modifier: Modifier = Mod
             PlayerView(it).apply {
                 player = exoPlayer
                 useController = false
-                resizeMode = androidx.media3.ui.AspectRatioWidget.RESIZE_MODE_ZOOM
+                resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             }
         },
         modifier = modifier

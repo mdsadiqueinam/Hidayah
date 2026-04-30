@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 data class ShieldSettingsUiState(
     val config: ShieldConfig = ShieldConfig(),
     val selectedImage: ShieldImage = ShieldImage.Resource(defaultShieldImageResources.first()),
@@ -64,7 +65,23 @@ class ShieldSettingsViewModel @Inject constructor(
             )
         }
     }
-...
+
+    private fun parseImagePath(path: String?): ShieldImage {
+        return if (path != null && path.startsWith("res:")) {
+            val resId = path.substringAfter("res:").toIntOrNull()
+            if (resId != null) ShieldImage.Resource(resId)
+            else ShieldImage.Resource(defaultShieldImageResources.first())
+        } else if (path != null) {
+            ShieldImage.UriImage(path)
+        } else {
+            ShieldImage.Resource(defaultShieldImageResources.first())
+        }
+    }
+
+    private fun updateHeadline(headline: String) {
+        _uiState.update { it.copy(config = it.config.copy(headline = headline)) }
+    }
+
     private fun updateSubHeadline(subHeadline: String) {
         _uiState.update { it.copy(config = it.config.copy(subHeadline = subHeadline)) }
     }
@@ -79,24 +96,6 @@ class ShieldSettingsViewModel @Inject constructor(
 
     private fun updateUseVideo(useVideo: Boolean) {
         _uiState.update { it.copy(config = it.config.copy(useVideo = useVideo)) }
-    }
-
-    private fun updateSelectedImage(image: ShieldImage) {
-
-            val resId = path.substringAfter("res:").toIntOrNull()
-            if (resId != null) ShieldImage.Resource(resId)
-            else ShieldImage.Resource(defaultShieldImageResources.first())
-        } else {
-            ShieldImage.UriImage(path)
-        }
-    }
-
-    private fun updateHeadline(headline: String) {
-        _uiState.update { it.copy(config = it.config.copy(headline = headline)) }
-    }
-
-    private fun updateSubHeadline(subHeadline: String) {
-        _uiState.update { it.copy(config = it.config.copy(subHeadline = subHeadline)) }
     }
 
     private fun updateSelectedImage(image: ShieldImage) {
