@@ -3,6 +3,7 @@ package io.github.mdsadiqueinam.hidayah
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -154,7 +155,7 @@ private fun MainBottomBar(
 }
 
 @Composable
-private fun MainNavigationBarItem(
+private fun RowScope.MainNavigationBarItem(
     screen: Screen,
     selected: Boolean,
     onClick: () -> Unit,

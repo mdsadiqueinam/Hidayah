@@ -286,4 +286,3 @@ private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
         )
     }
 }
-}

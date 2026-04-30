@@ -133,8 +133,8 @@ private fun SettingsHeader(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold
             )
         )
+        Spacer(modifier = Modifier.height(16.dp))
     }
-    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable

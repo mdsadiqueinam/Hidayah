@@ -46,11 +46,9 @@ class AppTrackerService : Service() {
     private var controlledAppsCache: Map<String, ControlledApp> = emptyMap()
 
     companion object {
-        private const val CHANNEL_ID = "app_tracker_channel"
         private const val NOTIFICATION_ID = 1
         private const val POLL_INTERVAL_MS = 300L
         private const val CHECK_INTERVAL_MS = 1000L
-        private const val POLL_LOOKBACK_MS = 1000L
         private const val SHIELD_TRIGGER_DELAY_MS = 500L
     }
 
@@ -59,13 +57,13 @@ class AppTrackerService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.i("AppTrackerService", "Service onCreate called")
-        createNotificationChannel()
+        AppTrackerHelper.createNotificationChannel(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("AppTrackerService", "Service onStartCommand called")
 
-        val notification = createNotification()
+        val notification = AppTrackerHelper.createNotification(this)
         startForeground(NOTIFICATION_ID, notification)
 
         if (trackingJob == null) {
@@ -74,36 +72,11 @@ class AppTrackerService : Service() {
         return START_STICKY
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "App Tracking Service"
-            val descriptionText = "Monitoring app usage for Hidayah"
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Hidayah Protection Active")
-            .setContentText("Monitoring app usage to keep you focused")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)
-            .build()
-    }
-
     private fun startTracking() {
         Log.i("AppTrackerService", "Tracking is started")
 
         val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
-        // Check Overlay Permission (required for Activity start from Service)
         if (!Settings.canDrawOverlays(this)) {
             Log.w("AppTrackerService", "Overlay permission NOT granted. ShieldActivity might not show.")
         }
@@ -111,7 +84,6 @@ class AppTrackerService : Service() {
         trackingJob = serviceScope.launch {
             val myPackageName = packageName
 
-            // 🔹 Cache config updates
             launch {
                 repository.getShieldConfig().collect {
                     Log.i("AppTrackerService", "Config updated: $it")
@@ -119,7 +91,6 @@ class AppTrackerService : Service() {
                 }
             }
 
-            // 🔹 Cache controlled apps
             launch {
                 repository.getControlledApps().collect {
                     Log.i("AppTrackerService", "Controlled apps updated: ${it.size} apps")
@@ -140,97 +111,53 @@ class AppTrackerService : Service() {
         val config = configCache
         val now = System.currentTimeMillis()
 
-        // Check if device is locked
         val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         if (keyguardManager.isKeyguardLocked) {
             delay(CHECK_INTERVAL_MS)
             return
         }
 
-        // Check if protection is active
-        if (!isProtectionActive(config, now)) {
+        if (!AppTrackerHelper.isProtectionActive(config, now)) {
             resetSession()
             delay(CHECK_INTERVAL_MS)
             return
         }
 
-        // Poll for top package
-        val topPackage = pollTopPackage(usageStatsManager, now)
+        val topPackage = AppTrackerHelper.pollTopPackage(usageStatsManager, now)
 
-        // Process the detected app
         if (topPackage != null && topPackage != myPackageName &&
             topPackage != "io.github.mdsadiqueinam.hidayah"
         ) {
             handleTopPackageDetected(topPackage, now)
-        } else if (topPackage == "io.github.mdsadiqueinam.hidayah") {
-            // If our own app is on top, don't reset session but don't count time either
         }
 
         delay(POLL_INTERVAL_MS)
     }
 
-    private fun isProtectionActive(config: ShieldConfig?, now: Long): Boolean =
-        config != null && config.isProtectionActive && config.pausedUntil <= now
-
-    private fun pollTopPackage(usageStatsManager: UsageStatsManager, now: Long): String? {
-        val startTime = now - POLL_LOOKBACK_MS
-        val events = usageStatsManager.queryEvents(startTime, now)
-        val event = UsageEvents.Event()
-
-        var topPackage: String? = null
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event)
-            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
-                topPackage = event.packageName
-            }
-        }
-
-        return topPackage
-    }
-
     private suspend fun handleTopPackageDetected(topPackage: String, now: Long) {
         if (topPackage != currentPackageName) {
-            handleNewAppDetected(topPackage, now)
+            Log.i("AppTrackerService", "New app detected: $topPackage")
+            currentPackageName = topPackage
+            sessionStartTime = now
+            lastShieldTriggeredPackage = null
+
+            val app = controlledAppsCache[currentPackageName]
+            if (app != null) {
+                Log.i("AppTrackerService", "Controlled app opened: $currentPackageName. Triggering shield.")
+                triggerShield(currentPackageName!!)
+                delay(SHIELD_TRIGGER_DELAY_MS)
+            }
         } else {
-            handleContinuedAppSession(topPackage, now)
-        }
-    }
+            val app = controlledAppsCache[topPackage]
+            if (app != null && app.sessionLimit > 0) {
+                val sessionDurationMs = now - sessionStartTime
+                val sessionLimitMs = app.sessionLimit * 60000L
 
-    private suspend fun handleNewAppDetected(topPackage: String, now: Long) {
-        Log.i("AppTrackerService", "New app detected: $topPackage")
-        currentPackageName = topPackage
-        sessionStartTime = now
-        lastShieldTriggeredPackage = null // Reset trigger for new app
-
-        val app = controlledAppsCache[currentPackageName]
-        if (app != null) {
-            Log.i(
-                "AppTrackerService",
-                "Controlled app opened: $currentPackageName. Triggering shield."
-            )
-            triggerShield(currentPackageName!!)
-            delay(SHIELD_TRIGGER_DELAY_MS) // Breather
-        }
-    }
-
-    private fun handleContinuedAppSession(topPackage: String, now: Long) {
-        val app = controlledAppsCache[topPackage]
-        if (app != null && app.sessionLimit > 0) {
-            enforceSessionLimit(topPackage, now, app)
-        }
-    }
-
-    private fun enforceSessionLimit(
-        packageName: String,
-        now: Long,
-        app: ControlledApp
-    ) {
-        val sessionDurationMs = now - sessionStartTime
-        val sessionLimitMs = app.sessionLimit * 60000L
-
-        if (sessionDurationMs >= sessionLimitMs) {
-            Log.i("AppTrackerService", "Session limit hit for $packageName")
-            triggerShield(packageName)
+                if (sessionDurationMs >= sessionLimitMs) {
+                    Log.i("AppTrackerService", "Session limit hit for $packageName")
+                    triggerShield(topPackage)
+                }
+            }
         }
     }
 
@@ -246,19 +173,12 @@ class AppTrackerService : Service() {
 
         Log.i("AppTrackerService", "Actually triggering shield for $packageName")
 
-        val intent = Intent(this, ShieldActivity::class.java).apply {
-            putExtra("packageName", packageName)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        }
+        val intent = AppTrackerHelper.getShieldIntent(this, packageName)
 
         try {
             startActivity(intent)
-        } catch (e: IllegalStateException) {
+        } catch (e: Exception) {
             Log.e("AppTrackerService", "Failed to start ShieldActivity: ${e.message}", e)
-        } catch (e: SecurityException) {
-            Log.e("AppTrackerService", "Security exception when starting ShieldActivity: ${e.message}", e)
         }
     }
 
