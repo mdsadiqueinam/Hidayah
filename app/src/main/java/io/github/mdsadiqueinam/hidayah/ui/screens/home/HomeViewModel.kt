@@ -26,18 +26,16 @@ import javax.inject.Inject
 
 data class TopApp(
     val name: String,
-    val usage: String
+    val usage: String,
+    val category: String,
+    val packageName: String
 )
 
 data class ControlledAppWithUsage(
     val app: ControlledApp,
-    val usage: String
+    val usage: String,
+    val limit: String = "No limit"
 )
-
-enum class ScreenTimeCategory(val label: String) {
-    TOTAL("Total"),
-    CONTROLLED_APP("Controlled App")
-}
 
 data class HomeUiState(
     val title: String = "Controlled Apps",
@@ -45,8 +43,12 @@ data class HomeUiState(
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
-    val selectedScreenTimeCategory: ScreenTimeCategory = ScreenTimeCategory.TOTAL,
     val totalScreenTime: String = "0h 0m",
+    val controlledScreenTime: String = "0h 0m",
+    val screenTimeLimit: String = "5h 0m",
+    val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(5),
+    val totalScreenTimeMs: Long = 0,
+    val controlledScreenTimeMs: Long = 0,
     val screenTimePercentage: String = "0% of the day",
     val screenTimeStatus: String = "Excellent",
     val topApps: List<TopApp> = emptyList(),
@@ -54,8 +56,7 @@ data class HomeUiState(
     val onAddClick: () -> Unit = {},
     val onProtectionToggle: (Boolean) -> Unit = {},
     val onFocusModeToggle: (Boolean) -> Unit = {},
-    val onPauseDurationChange: (String?) -> Unit = {},
-    val onScreenTimeCategoryChange: (ScreenTimeCategory) -> Unit = {}
+    val onPauseDurationChange: (String?) -> Unit = {}
 )
 
 @HiltViewModel
@@ -81,10 +82,6 @@ class HomeViewModel @Inject constructor(
                 },
                 onPauseDurationChange = { duration ->
                     updatePauseDuration(duration)
-                },
-                onScreenTimeCategoryChange = { category ->
-                    _uiState.update { it.copy(selectedScreenTimeCategory = category) }
-                    refreshUsageStats()
                 }
             )
         }
@@ -191,76 +188,73 @@ class HomeViewModel @Inject constructor(
 
         val stats = repository.getDailyUsageStats()
         val controlledPackageNames = rawControlledApps.map { it.packageName }.toSet()
-        val category = _uiState.value.selectedScreenTimeCategory
-
-        val filteredStats = if (category == ScreenTimeCategory.TOTAL) {
-            stats
-        } else {
-            stats.filter { controlledPackageNames.contains(it.key) }
-        }
-
-        val totalTimeMs = filteredStats.values.sumOf { it.totalTimeInForeground }
+        
+        // Total screen time
+        val totalTimeMs = stats.values.sumOf { it.totalTimeInForeground }
         val totalTimeHours = totalTimeMs.toDouble() / (1000 * 60 * 60)
 
-        val status = if (category == ScreenTimeCategory.TOTAL) {
-            when {
-                totalTimeHours < 2 -> "Excellence"
-                totalTimeHours < 3 -> "Good"
-                totalTimeHours < 4 -> "Moderate"
-                totalTimeHours < 5 -> "High"
-                else -> "Very High"
-            }
-        } else {
-            when {
-                totalTimeHours < 1 -> "Excellence"
-                totalTimeHours < 2 -> "Good"
-                totalTimeHours < 3 -> "Moderate"
-                totalTimeHours < 4 -> "High"
-                else -> "Very High"
-            }
+        // Controlled screen time
+        val controlledTimeMs = stats.filter { controlledPackageNames.contains(it.key) }
+            .values.sumOf { it.totalTimeInForeground }
+
+        val status = when {
+            totalTimeHours < 2 -> "Excellent"
+            totalTimeHours < 3 -> "Good"
+            totalTimeHours < 4 -> "Moderate"
+            totalTimeHours < 5 -> "High"
+            else -> "Very High"
         }
 
-        // Calculate percentage of day passed for display info (optional, keeping it for now if UI needs it)
-        val calendar = Calendar.getInstance()
-        val now = calendar.timeInMillis
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val dayStart = calendar.timeInMillis
-        val dayPassedMs = now - dayStart
-
-        val percentage = if (dayPassedMs > 0) (totalTimeMs * 100 / dayPassedMs).toInt() else 0
-
-        val topApps = filteredStats.values
+        val topApps = stats.values
             .filter { it.totalTimeInForeground > 0 }
             .sortedByDescending { it.totalTimeInForeground }
             .take(3)
             .map {
+                val packageManager = context.packageManager
                 val appName = try {
-                    val packageManager = context.packageManager
                     val appInfo = packageManager.getApplicationInfo(it.packageName, 0)
                     packageManager.getApplicationLabel(appInfo).toString()
                 } catch (e: Exception) {
                     it.packageName
                 }
+                val appCategory = try {
+                    val appInfo = packageManager.getApplicationInfo(it.packageName, 0)
+                    when (appInfo.category) {
+                        android.content.pm.ApplicationInfo.CATEGORY_AUDIO -> "Audio"
+                        android.content.pm.ApplicationInfo.CATEGORY_GAME -> "Games"
+                        android.content.pm.ApplicationInfo.CATEGORY_IMAGE -> "Image"
+                        android.content.pm.ApplicationInfo.CATEGORY_MAPS -> "Maps"
+                        android.content.pm.ApplicationInfo.CATEGORY_NEWS -> "News"
+                        android.content.pm.ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
+                        android.content.pm.ApplicationInfo.CATEGORY_SOCIAL -> "Social"
+                        android.content.pm.ApplicationInfo.CATEGORY_VIDEO -> "Video"
+                        else -> "App"
+                    }
+                } catch (e: Exception) {
+                    "App"
+                }
                 TopApp(
                     name = appName,
-                    usage = formatDuration(it.totalTimeInForeground)
+                    usage = formatDuration(it.totalTimeInForeground),
+                    category = appCategory,
+                    packageName = it.packageName
                 )
             }
 
         val controlledAppsWithUsage = rawControlledApps.map { app ->
             ControlledAppWithUsage(
                 app = app,
-                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L)
+                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
+                limit = if (app.dailyLimit > 0) formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong())) else "No limit"
             )
         }
 
         _uiState.update { state ->
             state.copy(
                 totalScreenTime = formatDuration(totalTimeMs),
-                screenTimePercentage = "$percentage% of the day",
+                controlledScreenTime = formatDuration(controlledTimeMs),
+                totalScreenTimeMs = totalTimeMs,
+                controlledScreenTimeMs = controlledTimeMs,
                 screenTimeStatus = status,
                 topApps = topApps,
                 controlledApps = controlledAppsWithUsage
