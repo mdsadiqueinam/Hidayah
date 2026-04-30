@@ -54,6 +54,7 @@ detekt {
 }
 
 dependencies {
+    detektPlugins(libs.detekt.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

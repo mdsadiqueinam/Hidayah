@@ -331,6 +331,7 @@ naming:
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     functionPattern: '[a-z][a-zA-Z0-9]*'
     excludeClassPattern: '$^'
+    ignoreAnnotated: ['Composable']
   FunctionParameterNaming:
     active: true
     parameterPattern: '[a-z][A-Za-z0-9]*'
@@ -854,3 +855,38 @@ style:
     active: true
     excludeImports:
       - 'java.util.*'
+
+Compose:
+  active: true
+  ComposableNaming:
+    active: true
+  ComposableParamOrder:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierOrder:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleModifiersForWidget:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  ParametersOrder:
+    active: true
+  PreviewNaming:
+    active: true
+  PreviewPublic:
+    active: true
+  RememberMissing:
+    active: true
+  UnnecessaryStatePropagated:
+    active: true
+  UnusedComposableParameter:
+    active: true
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
