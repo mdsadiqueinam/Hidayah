@@ -103,7 +103,9 @@ private fun MainScaffold(
                     currentDestination = currentDestination,
                     onItemClick = { route ->
                         navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -112,7 +114,11 @@ private fun MainScaffold(
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).then(modifier)) {
+        Box(
+            modifier = Modifier
+                .padding(bottom = innerPadding.calculateBottomPadding())
+                .then(modifier)
+        ) {
             NavGraph(navController = navController)
         }
     }
@@ -133,7 +139,9 @@ private fun MainBottomBar(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
         tonalElevation = 8.dp,
@@ -202,7 +210,7 @@ fun PermissionDialog(onGoToSettings: () -> Unit) {
         text = {
             Text(
                 "Hidayah needs the 'Display over other apps' permission to show " +
-                    "the protection shield and keep you focused. Please enable it in settings."
+                        "the protection shield and keep you focused. Please enable it in settings."
             )
         },
         confirmButton = {

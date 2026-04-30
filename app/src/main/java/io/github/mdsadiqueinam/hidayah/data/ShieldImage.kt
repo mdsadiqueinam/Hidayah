@@ -12,11 +12,12 @@ sealed class ShieldImage {
             return when {
                 path == null -> Resource(R.drawable.shield_bg_1)
                 path.startsWith("res:") -> {
-                    val resName = path.substringAfter("res:")
+                    path.substringAfter("res:")
                     // Note: This requires access to resources, maybe better to handle in ViewModel
                     // For now, let's assume we can map it or just use the ID if we store it as ID
                     Resource(R.drawable.shield_bg_1) // Placeholder
                 }
+
                 else -> UriImage(path)
             }
         }

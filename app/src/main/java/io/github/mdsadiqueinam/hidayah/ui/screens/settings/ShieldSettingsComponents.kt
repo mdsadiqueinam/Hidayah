@@ -194,7 +194,11 @@ fun ShieldActionButtons(
             onClick = uiState.onResetToDefaults,
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
         ) {
-            Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(
+                Icons.Default.RestartAlt,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text("Reset to Defaults", style = MaterialTheme.typography.labelLarge)
         }
@@ -231,9 +235,24 @@ fun ShieldLivePreview(
                 )
             )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
-                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
-                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer))
+                Box(
+                    Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                )
+                Box(
+                    Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                )
+                Box(
+                    Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                )
             }
         }
 
@@ -244,7 +263,9 @@ fun ShieldLivePreview(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp)
         )
     }
 }
@@ -260,7 +281,11 @@ fun ShieldPreviewBox(
             .aspectRatio(SHIELD_ASPECT_RATIO)
             .clip(RoundedCornerShape(32.dp))
             .background(Color.Black)
-            .border(8.dp, MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(32.dp))
+            .border(
+                8.dp,
+                MaterialTheme.colorScheme.surfaceContainerHighest,
+                RoundedCornerShape(32.dp)
+            )
     ) {
         // Shield Background
         AsyncImage(
@@ -270,10 +295,12 @@ fun ShieldPreviewBox(
             },
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().drawWithContent {
-                drawContent()
-                drawRect(Color.Black.copy(alpha = 0.4f))
-            }
+            modifier = Modifier
+                .fillMaxSize()
+                .drawWithContent {
+                    drawContent()
+                    drawRect(Color.Black.copy(alpha = 0.4f))
+                }
         )
         Box(
             modifier = Modifier
@@ -309,7 +336,11 @@ fun ShieldPreviewContent(
         ShieldPreviewIcon()
         Spacer(modifier = Modifier.height(32.dp))
         ShieldPreviewText(uiState)
-        Box(modifier = Modifier.fillMaxHeight().weight(1f))
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f)
+        )
         ShieldPreviewProgress()
     }
 }
@@ -362,7 +393,11 @@ fun ShieldPreviewText(
 
 @Composable
 fun ShieldPreviewProgress(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

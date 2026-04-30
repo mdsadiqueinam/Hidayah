@@ -39,7 +39,9 @@ fun AppIconContainer(
     shape: RoundedCornerShape = RoundedCornerShape(12.dp)
 ) {
     Surface(
-        modifier = Modifier.size(size).then(modifier),
+        modifier = Modifier
+            .size(size)
+            .then(modifier),
         shape = shape,
         color = Color.White,
         shadowElevation = 1.dp

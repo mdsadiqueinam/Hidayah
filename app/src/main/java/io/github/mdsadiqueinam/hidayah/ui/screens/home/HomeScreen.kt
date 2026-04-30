@@ -137,7 +137,7 @@ private fun HomeScreenPreview() {
         controlledScreenTime = "1h 20m",
         totalScreenTimeMs =
             java.util.concurrent.TimeUnit.HOURS.toMillis(3) +
-                java.util.concurrent.TimeUnit.MINUTES.toMillis(15),
+                    java.util.concurrent.TimeUnit.MINUTES.toMillis(15),
         screenTimeLimit = "5h 0m",
         screenTimeLimitMs = java.util.concurrent.TimeUnit.HOURS.toMillis(5),
         screenTimeStatus = "Excellent",
@@ -150,7 +150,10 @@ private fun HomeScreenPreview() {
         ),
         controlledApps = listOf(
             ControlledAppWithUsage(
-                io.github.mdsadiqueinam.hidayah.data.ControlledApp("com.facebook.katana", "Facebook"),
+                io.github.mdsadiqueinam.hidayah.data.ControlledApp(
+                    "com.facebook.katana",
+                    "Facebook"
+                ),
                 "22m",
                 "20m"
             ),

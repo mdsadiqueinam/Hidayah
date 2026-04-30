@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -59,7 +58,12 @@ fun ShieldScreen(
     val uiState by viewModel.uiState.collectAsState()
     val shieldImage = rememberShieldImage(uiState.shieldConfig.imagePath)
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black).then(modifier)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .then(modifier)
+    ) {
         ShieldBackgroundImage(shieldImage)
         ShieldGradientOverlay()
         ShieldContentColumn(uiState, onClose, onOpen)
@@ -77,6 +81,7 @@ private fun rememberShieldImage(imagePath: String?): ShieldImage {
                 if (resId != null) ShieldImage.Resource(resId)
                 else ShieldImage.Resource(defaultShieldImageResources.first())
             }
+
             else -> ShieldImage.UriImage(path)
         }
     }
@@ -258,7 +263,11 @@ private fun ShieldActionButtons(
 
 @Composable
 private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

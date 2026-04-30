@@ -3,7 +3,6 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.home
 import android.app.AppOpsManager
 import android.content.Context
 import android.os.Process
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -199,7 +197,8 @@ class HomeViewModel @Inject constructor(
 
         // Calculate screen time totals
         val totalTimeMs = HomeStatsHelper.calculateTotalScreenTime(stats)
-        val controlledTimeMs = HomeStatsHelper.calculateControlledScreenTime(stats, controlledPackageNames)
+        val controlledTimeMs =
+            HomeStatsHelper.calculateControlledScreenTime(stats, controlledPackageNames)
 
         // Determine status
         val totalTimeHours = totalTimeMs.toDouble() / MILLIS_PER_HOUR
@@ -207,7 +206,8 @@ class HomeViewModel @Inject constructor(
 
         // Build lists
         val topApps = HomeStatsHelper.buildTopAppsList(context, stats)
-        val controlledAppsWithUsage = HomeStatsHelper.buildControlledAppsList(rawControlledApps, stats)
+        val controlledAppsWithUsage =
+            HomeStatsHelper.buildControlledAppsList(rawControlledApps, stats)
 
         // Update UI state
         _uiState.update { state ->

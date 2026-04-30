@@ -62,7 +62,7 @@ class ShieldSettingsViewModel @Inject constructor(
 
     private fun parseImagePath(path: String?): ShieldImage {
         if (path.isNullOrBlank()) return ShieldImage.Resource(defaultShieldImageResources.first())
-        
+
         return if (path.startsWith("res:")) {
             val resId = path.substringAfter("res:").toIntOrNull()
             if (resId != null) ShieldImage.Resource(resId)
@@ -85,21 +85,21 @@ class ShieldSettingsViewModel @Inject constructor(
             is ShieldImage.Resource -> "res:${image.resId}"
             is ShieldImage.UriImage -> image.uri
         }
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 selectedImage = image,
                 config = it.config.copy(imagePath = path)
-            ) 
+            )
         }
     }
 
     private fun resetToDefaults() {
         val defaultConfig = ShieldConfig()
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 config = defaultConfig,
                 selectedImage = parseImagePath(defaultConfig.imagePath)
-            ) 
+            )
         }
     }
 

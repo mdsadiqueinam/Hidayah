@@ -224,7 +224,11 @@ private fun ShieldImageSelectorCard(
                 shape = CircleShape,
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Upload,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Upload", style = MaterialTheme.typography.labelLarge)
             }

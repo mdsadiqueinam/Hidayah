@@ -83,13 +83,19 @@ fun HomeTopAppBar(modifier: Modifier = Modifier) {
 fun PermissionRequiredCard(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     Card(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Usage Access Required",
@@ -120,7 +126,9 @@ fun PermissionRequiredCard(modifier: Modifier = Modifier) {
 @Composable
 fun StatsHeroCard(uiState: HomeUiState, modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -138,7 +146,9 @@ fun StatsHeroCard(uiState: HomeUiState, modifier: Modifier = Modifier) {
 @Composable
 private fun StatsHeroHeader(screenTimeStatus: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -163,7 +173,11 @@ private fun StatsHeroHeader(screenTimeStatus: String, modifier: Modifier = Modif
 
 @Composable
 private fun StatsTimeSummary(uiState: HomeUiState, modifier: Modifier = Modifier) {
-    Row(modifier = Modifier.fillMaxWidth().then(modifier)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier)
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "Total Screen Time",
@@ -250,7 +264,9 @@ fun ProtectionSection(uiState: HomeUiState, modifier: Modifier = Modifier) {
 @Composable
 private fun ProtectionHeader(isActive: Boolean, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -260,7 +276,10 @@ private fun ProtectionHeader(isActive: Boolean, modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        Surface(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f), shape = CircleShape) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
+            shape = CircleShape
+        ) {
             Text(
                 text = if (isActive) "Active" else "Paused",
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
@@ -281,7 +300,9 @@ private fun ProtectionCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
@@ -318,7 +339,9 @@ private fun ProtectionCardHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -386,7 +409,10 @@ private fun PauseOptionsRow(
                 } else {
                     MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                 },
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    Color.White.copy(alpha = 0.1f)
+                )
             ) {
                 Text(
                     text = option,

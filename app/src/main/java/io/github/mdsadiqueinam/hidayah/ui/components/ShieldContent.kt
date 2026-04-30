@@ -70,7 +70,13 @@ fun ShieldContent(
     ) {
         ShieldImageCircle(bitmap, editable, onColor, onImageClick)
         ShieldHeadlineSection(headline, editable, onColor, inputBackground, onHeadlineChange)
-        ShieldSubHeadlineSection(subHeadline, editable, onColor, inputBackground, onSubHeadlineChange)
+        ShieldSubHeadlineSection(
+            subHeadline,
+            editable,
+            onColor,
+            inputBackground,
+            onSubHeadlineChange
+        )
         ShieldAppInfoSection(appName, usage, attempts, onColor)
         ShieldActionButtons(onCloseClick, onOpenClick, accentColor)
     }

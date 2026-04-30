@@ -2,13 +2,12 @@ package io.github.mdsadiqueinam.hidayah
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.mdsadiqueinam.hidayah.ui.screens.shield.ShieldScreen
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ShieldActivity : ComponentActivity() {
@@ -17,7 +16,7 @@ class ShieldActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // checking packageName exists
-        val packageName = intent.getStringExtra("packageName") ?: run {
+        intent.getStringExtra("packageName") ?: run {
             finish()
             return
         }

@@ -1,21 +1,13 @@
 package io.github.mdsadiqueinam.hidayah.service
 
 import android.app.KeyguardManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
-import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.mdsadiqueinam.hidayah.ShieldActivity
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
@@ -78,7 +70,10 @@ class AppTrackerService : Service() {
         val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
         if (!Settings.canDrawOverlays(this)) {
-            Log.w("AppTrackerService", "Overlay permission NOT granted. ShieldActivity might not show.")
+            Log.w(
+                "AppTrackerService",
+                "Overlay permission NOT granted. ShieldActivity might not show."
+            )
         }
 
         trackingJob = serviceScope.launch {
@@ -111,7 +106,7 @@ class AppTrackerService : Service() {
         val config = configCache
         val now = System.currentTimeMillis()
 
-        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
         if (keyguardManager.isKeyguardLocked) {
             delay(CHECK_INTERVAL_MS)
             return
@@ -143,7 +138,10 @@ class AppTrackerService : Service() {
 
             val app = controlledAppsCache[currentPackageName]
             if (app != null) {
-                Log.i("AppTrackerService", "Controlled app opened: $currentPackageName. Triggering shield.")
+                Log.i(
+                    "AppTrackerService",
+                    "Controlled app opened: $currentPackageName. Triggering shield."
+                )
                 triggerShield(currentPackageName!!)
                 delay(SHIELD_TRIGGER_DELAY_MS)
             }

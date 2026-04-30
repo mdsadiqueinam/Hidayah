@@ -2,7 +2,6 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.appsettings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -101,7 +100,10 @@ fun AppSettingsScreenContent(
                     .padding(horizontal = 24.dp)
                     .then(modifier),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 16.dp, bottom = 100.dp)
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    top = 16.dp,
+                    bottom = 100.dp
+                )
             ) {
                 item { AppIdentityHero(app) }
 
