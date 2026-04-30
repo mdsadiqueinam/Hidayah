@@ -57,9 +57,19 @@ fun ShieldScreen(
     viewModel: ShieldViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    val shieldImage = remember(uiState.shieldConfig.imagePath) {
-        val path = uiState.shieldConfig.imagePath
+    val shieldImage = rememberShieldImage(uiState.shieldConfig.imagePath)
+
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black).then(modifier)) {
+        ShieldBackgroundImage(shieldImage)
+        ShieldGradientOverlay()
+        ShieldContentColumn(uiState, onClose, onOpen)
+    }
+}
+
+@Composable
+private fun rememberShieldImage(imagePath: String?): ShieldImage {
+    return remember(imagePath) {
+        val path = imagePath
         when {
             path.isNullOrBlank() -> ShieldImage.Resource(defaultShieldImageResources.first())
             path.startsWith("res:") -> {
@@ -70,172 +80,210 @@ fun ShieldScreen(
             else -> ShieldImage.UriImage(path)
         }
     }
+}
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black).then(modifier)) {
-        // Shield Background
-        AsyncImage(
-            model = when (shieldImage) {
-                is ShieldImage.Resource -> shieldImage.resId
-                is ShieldImage.UriImage -> shieldImage.uri
-            },
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().alpha(BACKGROUND_IMAGE_ALPHA).drawWithContent {
+@Composable
+private fun ShieldBackgroundImage(shieldImage: ShieldImage, modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = when (shieldImage) {
+            is ShieldImage.Resource -> shieldImage.resId
+            is ShieldImage.UriImage -> shieldImage.uri
+        },
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .fillMaxSize()
+            .alpha(BACKGROUND_IMAGE_ALPHA)
+            .drawWithContent {
                 drawContent()
                 drawRect(Color.Black.copy(alpha = BACKGROUND_OVERLAY_ALPHA))
             }
-        )
-        
-        // Gradient Overlay
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                            Color.Transparent,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                        )
+    )
+}
+
+@Composable
+private fun ShieldGradientOverlay(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
                 )
-        )
+            )
+    )
+}
 
-        // Shield Content
-        Column(
+@Composable
+private fun ShieldContentColumn(
+    uiState: ShieldUiState,
+    onClose: () -> Unit,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        ShieldIconSection()
+        Spacer(modifier = Modifier.height(40.dp))
+        ShieldTextSection(uiState)
+        Spacer(modifier = Modifier.height(48.dp))
+        ShieldUsageStats(uiState)
+        Spacer(modifier = Modifier.weight(1f))
+        ShieldActionButtons(onClose, onOpen)
+        Spacer(modifier = Modifier.height(16.dp))
+        ShieldProgressIndicator()
+    }
+}
+
+@Composable
+private fun ShieldIconSection(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(100.dp)
+            .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+            .background(Color.White.copy(alpha = 0.1f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.Shield,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(50.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShieldTextSection(
+    uiState: ShieldUiState,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = uiState.shieldConfig.headline.ifEmpty { "Peace of Mind" },
+            style = MaterialTheme.typography.displayMedium.copy(
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineHeight = 44.sp
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = uiState.shieldConfig.subHeadline.ifEmpty {
+                "Your sanctuary is active. Take a deep breath and reconnect with the present moment."
+            },
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+                lineHeight = 28.sp
+            ),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShieldUsageStats(
+    uiState: ShieldUiState,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.1f))
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+private fun ShieldActionButtons(
+    onClose: () -> Unit,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Button(
+            onClick = onClose,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .height(64.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.primary
+            ),
+            shape = RoundedCornerShape(20.dp)
         ) {
-            // Glassmorphic Shield Icon
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape)
-                    .background(Color.White.copy(alpha = 0.1f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.Shield,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(50.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(40.dp))
-            
             Text(
-                text = uiState.shieldConfig.headline.ifEmpty { "Peace of Mind" },
-                style = MaterialTheme.typography.displayMedium.copy(
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 44.sp
-                )
+                "Close Application",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+        }
+
+        OutlinedButton(
+            onClick = onOpen,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp),
+            shape = RoundedCornerShape(20.dp),
+            border = androidx.compose.foundation.BorderStroke(2.dp, Color.White.copy(alpha = 0.5f)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+        ) {
             Text(
-                text = uiState.shieldConfig.subHeadline.ifEmpty { "Your sanctuary is active. Take a deep breath and reconnect with the present moment." },
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 28.sp
-                ),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                "Continue Anyway",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Usage Stats (optional but good for context)
-            Row(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.1f))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Buttons at the bottom
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = onClose,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text(
-                        "Close Application",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-
-                OutlinedButton(
-                    onClick = onOpen,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.White.copy(alpha = 0.5f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                ) {
-                    Text(
-                        "Continue Anyway",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Progress indicator (mocking the "Remaining" text)
-            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(PROGRESS_BAR_WIDTH_MOCK) // Just a visual mock
-                            .fillMaxHeight()
-                            .background(Color.White.copy(alpha = 0.8f))
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "PROTECTION ACTIVE",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        color = Color.White.copy(alpha = 0.6f),
-                        letterSpacing = 1.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
     }
+}
+
+@Composable
+private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.2f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(PROGRESS_BAR_WIDTH_MOCK)
+                    .fillMaxHeight()
+                    .background(Color.White.copy(alpha = 0.8f))
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "PROTECTION ACTIVE",
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = Color.White.copy(alpha = 0.6f),
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
+}
 }

@@ -55,64 +55,86 @@ fun AppSelectionDialog(
                 .fillMaxHeight(DIALOG_MAX_HEIGHT_FRACTION)
                 .then(modifier)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
-            ) {
-                Text(
-                    text = "Add Controlled Apps",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                OutlinedTextField(
-                    value = uiState.searchQuery,
-                    onValueChange = uiState.onSearchQueryChange,
-                    placeholder = { Text("Search by name") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium
-                )
-
+            Column(modifier = Modifier.padding(24.dp)) {
+                AppSelectionDialogHeader()
                 Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(uiState.filteredApps, key = { it.packageName }) { app ->
-                        AppRow(
-                            appName = app.appName,
-                            packageName = app.packageName,
-                            usage = app.formattedUsage,
-                            isSelected = uiState.selectedPackages.contains(app.packageName),
-                            onToggle = { uiState.onAppToggle(app.packageName) }
-                        )
-                    }
-                }
-
+                AppSelectionSearchField(uiState)
                 Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text("Cancel")
-                    }
-                    TextButton(
-                        onClick = {
-                            uiState.onSave(uiState.selectedPackages)
-                            onDismiss()
-                        }
-                    ) {
-                        Text("Done")
-                    }
-                }
+                AppSelectionList(uiState)
+                Spacer(modifier = Modifier.height(16.dp))
+                AppSelectionDialogActions(onDismiss, uiState)
             }
+        }
+    }
+}
+
+@Composable
+private fun AppSelectionDialogHeader(modifier: Modifier = Modifier) {
+    Text(
+        text = "Add Controlled Apps",
+        style = MaterialTheme.typography.headlineSmall,
+        modifier = modifier.padding(bottom = 16.dp)
+    )
+}
+
+@Composable
+private fun AppSelectionSearchField(
+    uiState: AppSelectionUiState,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = uiState.searchQuery,
+        onValueChange = uiState.onSearchQueryChange,
+        placeholder = { Text("Search by name") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        modifier = modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = MaterialTheme.shapes.medium
+    )
+}
+
+@Composable
+private fun AppSelectionList(
+    uiState: AppSelectionUiState,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(modifier = modifier.weight(1f)) {
+        items(uiState.filteredApps, key = { it.packageName }) { app ->
+            AppRow(
+                appName = app.appName,
+                packageName = app.packageName,
+                usage = app.formattedUsage,
+                isSelected = uiState.selectedPackages.contains(app.packageName),
+                onToggle = { uiState.onAppToggle(app.packageName) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppSelectionDialogActions(
+    onDismiss: () -> Unit,
+    uiState: AppSelectionUiState,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            Text("Cancel")
+        }
+        TextButton(
+            onClick = {
+                uiState.onSave(uiState.selectedPackages)
+                onDismiss()
+            }
+        ) {
+            Text("Done")
         }
     }
 }

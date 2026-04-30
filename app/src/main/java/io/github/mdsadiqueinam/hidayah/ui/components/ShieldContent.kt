@@ -55,31 +55,10 @@ fun ShieldContent(
     onCloseClick: () -> Unit = {},
     onOpenClick: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     val onColor = MaterialTheme.colorScheme.inverseOnSurface
     val inputBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
     val accentColor = MaterialTheme.colorScheme.tertiary
-
-    val bitmap = remember(imagePath) {
-        if (imagePath != null) {
-            try {
-                val uri = imagePath.toUri()
-                val source = ImageDecoder.createSource(context.contentResolver, uri)
-                ImageDecoder.decodeBitmap(source)
-            } catch (e: IllegalArgumentException) {
-                android.util.Log.w("ShieldContent", "Invalid image path: $imagePath", e)
-                null
-            } catch (e: java.io.IOException) {
-                android.util.Log.w("ShieldContent", "I/O error decoding image: $imagePath", e)
-                null
-            } catch (e: SecurityException) {
-                android.util.Log.w("ShieldContent", "Security exception decoding image: $imagePath", e)
-                null
-            }
-        } else {
-            null
-        }
-    }
+    val bitmap = rememberDecodedBitmap(imagePath)
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -105,129 +84,234 @@ fun ShieldContent(
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                    modifier = modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterVertically,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
             }
-        }
+                    ShieldImageCircle(bitmap, editable, onColor, onImageClick)
+                    ShieldHeadlineSection(headline, editable, onColor, inputBackground, onHeadlineChange)
+                    ShieldSubHeadlineSection(subHeadline, editable, onColor, inputBackground, onSubHeadlineChange)
+                    ShieldAppInfoSection(appName, usage, attempts, onColor)
+                    ShieldActionButtons(onCloseClick, onOpenClick, accentColor)
+                }
+            }
 
-        if (editable) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Tap on circle to add image",
-                color = onColor.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.bodySmall,
-                fontSize = 12.sp
-            )
-        }
+            @Composable
+            private fun rememberDecodedBitmap(imagePath: String?): Bitmap? {
+                val context = LocalContext.current
+                return remember(imagePath) {
+                    if (imagePath != null) {
+                        try {
+                            val uri = imagePath.toUri()
+                            val source = ImageDecoder.createSource(context.contentResolver, uri)
+                            ImageDecoder.decodeBitmap(source)
+                        } catch (e: IllegalArgumentException) {
+                            android.util.Log.w("ShieldContent", "Invalid image path: $imagePath", e)
+                            null
+                        } catch (e: java.io.IOException) {
+                            android.util.Log.w("ShieldContent", "I/O error decoding image: $imagePath", e)
+                            null
+                        } catch (e: SecurityException) {
+                            android.util.Log.w("ShieldContent", "Security exception decoding image: $imagePath", e)
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+            }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Headline Input Box (Stylized)
-        if (editable) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = inputBackground
+            @Composable
+            private fun ShieldImageCircle(
+                bitmap: Bitmap?,
+                editable: Boolean,
+                onColor: Color,
+                onImageClick: () -> Unit,
+                modifier: Modifier = Modifier
             ) {
-                BasicTextFieldWrapper(
-                    value = headline,
-                    onValueChange = onHeadlineChange,
-                    placeholder = "Pause. Think. Decide.",
-                    textStyle = MaterialTheme.typography.headlineSmall.copy(
+                Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(onColor.copy(alpha = 0.1f))
+                            .then(
+                                if (editable) Modifier.clickable { onImageClick() } else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (bitmap != null) {
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                    if (editable) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tap on circle to add image",
+                            color = onColor.copy(alpha = 0.7f),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+
+            @Composable
+            private fun ShieldHeadlineSection(
+                headline: String,
+                editable: Boolean,
+                onColor: Color,
+                inputBackground: Color,
+                onHeadlineChange: (String) -> Unit,
+                modifier: Modifier = Modifier
+            ) {
+                Column(modifier = modifier.fillMaxWidth()) {
+                    if (editable) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(24.dp),
+                            color = inputBackground
+                        ) {
+                            BasicTextFieldWrapper(
+                                value = headline,
+                                onValueChange = onHeadlineChange,
+                                placeholder = "Pause. Think. Decide.",
+                                textStyle = MaterialTheme.typography.headlineSmall.copy(
+                                    color = onColor,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                modifier = Modifier.padding(20.dp),
+                                cursorColor = onColor
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = headline.ifEmpty { "Pause. Think. Decide." },
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = onColor,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+                }
+            }
+
+            @Composable
+            private fun ShieldSubHeadlineSection(
+                subHeadline: String,
+                editable: Boolean,
+                onColor: Color,
+                inputBackground: Color,
+                onSubHeadlineChange: (String) -> Unit,
+                modifier: Modifier = Modifier
+            ) {
+                Column(modifier = modifier.fillMaxWidth()) {
+                    if (editable) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(24.dp),
+                            color = inputBackground
+                        ) {
+                            BasicTextFieldWrapper(
+                                value = subHeadline,
+                                onValueChange = onSubHeadlineChange,
+                                placeholder = "Take a breath before opening this app.",
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    color = onColor.copy(alpha = 0.8f),
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier.padding(20.dp),
+                                cursorColor = onColor
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = subHeadline.ifEmpty { "Take a breath before opening this app." },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = onColor.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+                }
+            }
+
+            @Composable
+            private fun ShieldAppInfoSection(
+                appName: String,
+                usage: String,
+                attempts: Int,
+                onColor: Color,
+                modifier: Modifier = Modifier
+            ) {
+                Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = appName,
+                        style = MaterialTheme.typography.titleLarge,
                         color = onColor,
-                        textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(20.dp),
-                    cursorColor = onColor
-                )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Today's Usage: $usage",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = onColor.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = "Open Attempts: $attempts",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = onColor.copy(alpha = 0.8f)
+                    )
+                }
             }
-        } else {
-            Text(
-                text = headline.ifEmpty { "Pause. Think. Decide." },
-                style = MaterialTheme.typography.headlineSmall,
-                color = onColor,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sub-headline Input Box (Stylized)
-        if (editable) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = inputBackground
+            @Composable
+            private fun ShieldActionButtons(
+                onCloseClick: () -> Unit,
+                onOpenClick: () -> Unit,
+                accentColor: Color,
+                modifier: Modifier = Modifier
             ) {
-                BasicTextFieldWrapper(
-                    value = subHeadline,
-                    onValueChange = onSubHeadlineChange,
-                    placeholder = "Take a breath before opening this app.",
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = onColor.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.padding(20.dp),
-                    cursorColor = onColor
-                )
-            }
-        } else {
-            Text(
-                text = subHeadline.ifEmpty { "Take a breath before opening this app." },
-                style = MaterialTheme.typography.bodyMedium,
-                color = onColor.copy(alpha = 0.8f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-        }
+                Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = appName,
-            style = MaterialTheme.typography.titleLarge,
-            color = onColor,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Today's Usage: $usage",
-            style = MaterialTheme.typography.bodyMedium,
-            color = onColor.copy(alpha = 0.8f)
-        )
-
-        Text(
-            text = "Open Attempts: $attempts",
-            style = MaterialTheme.typography.bodyMedium,
-            color = onColor.copy(alpha = 0.8f)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Buttons
-        Button(
-            onClick = onCloseClick,
-            modifier = Modifier
+                        text = "",
+                        modifier = Modifier.height(8.dp)
                 .fillMaxWidth()
-                .height(64.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = accentColor,
-                contentColor = MaterialTheme.colorScheme.onTertiary
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
+                    Button(
+                        onClick = onCloseClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = accentColor,
+                            contentColor = MaterialTheme.colorScheme.onTertiary
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text("Close", fontWeight = FontWeight.Bold)
+                    }
+                    OutlinedButton(
+                        onClick = onOpenClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, accentColor),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor)
             Text("Close", fontWeight = FontWeight.Bold)
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedButton(
+                    {
+                        Text("Open", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
             onClick = onOpenClick,
             modifier = Modifier
                 .fillMaxWidth()

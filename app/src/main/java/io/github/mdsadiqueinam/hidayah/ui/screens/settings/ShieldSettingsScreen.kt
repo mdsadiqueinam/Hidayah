@@ -105,36 +105,7 @@ fun ShieldSettingsScreenContent(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Spa,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Hidayah",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                )
-            )
-        }
+        topBar = { ShieldSettingsTopBar(onBack) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -144,290 +115,407 @@ fun ShieldSettingsScreenContent(
                 .then(modifier),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                Column {
-                    Text(
-                        "PRIVACY CONFIGURATION",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.secondary,
-                            letterSpacing = 2.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+            item { ShieldSettingsHeader() }
+            item { ShieldContentEditor(uiState, imagePickerLauncher, defaultShieldImages) }
+            item { ShieldLivePreview(uiState) }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShieldSettingsTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    TopAppBar(
+        modifier = modifier,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Spa,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Hidayah",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        "Shield Settings",
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Text(
-                        "Customize your sanctuary. Define how the Global Shield appears when you're reclaiming your focus.",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
+                )
             }
-
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                    // Content Card
-                    SectionCard(
-                        icon = Icons.Default.EditNote,
-                        title = "Content"
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                            InputField(
-                                label = "Headline",
-                                value = uiState.config.headline,
-                                onValueChange = uiState.onHeadlineChange,
-                                placeholder = "Enter shield headline..."
-                            )
-                            InputField(
-                                label = "Sub-headline",
-                                value = uiState.config.subHeadline,
-                                onValueChange = uiState.onSubHeadlineChange,
-                                placeholder = "Enter shield message...",
-                                singleLine = false,
-                                minLines = 2
-                            )
-                        }
-                    }
-
-                    // Image Selector Card
-                    SectionCard(
-                        icon = Icons.Default.Image,
-                        title = "Shield Image",
-                        trailing = {
-                            Button(
-                                onClick = { imagePickerLauncher.launch("image/*") },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                ),
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Upload", style = MaterialTheme.typography.labelLarge)
-                            }
-                        }
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            defaultShieldImages.forEach { image ->
-                                val isSelected = uiState.selectedImage == image
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .aspectRatio(1f)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .border(
-                                            width = if (isSelected) 4.dp else 0.dp,
-                                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                            shape = RoundedCornerShape(12.dp)
-                                        )
-                                        .clickable { uiState.onImageSelected(image) }
-                                ) {
-                                    AsyncImage(
-                                        model = when (image) {
-                                            is ShieldImage.Resource -> image.resId
-                                            is ShieldImage.UriImage -> image.uri
-                                        },
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                    if (isSelected) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                Icons.Default.CheckCircle,
-                                                contentDescription = null,
-                                                tint = Color.White
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Actions
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(
-                            onClick = uiState.onResetToDefaults,
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Reset to Defaults", style = MaterialTheme.typography.labelLarge)
-                        }
-                        Button(
-                            onClick = uiState.onSave,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
-                        ) {
-                            Text("Save Changes", style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        )
+    )
+}
 
-            item {
-                // Live Preview Section
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "LIVE PREVIEW",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                letterSpacing = 2.sp
-                            )
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
-                            Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
-                            Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer))
-                        }
-                    }
+@Composable
+private fun ShieldSettingsHeader(modifier: Modifier = Modifier) {
+    Spacer(modifier = modifier.height(24.dp))
+    Column {
+        Text(
+            "PRIVACY CONFIGURATION",
+            style = MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.secondary,
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            "Shield Settings",
+            style = MaterialTheme.typography.displayMedium.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            "Customize your sanctuary. Define how the Global Shield appears when you're reclaiming your focus.",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+}
 
+@Composable
+private fun ShieldContentEditor(
+    uiState: ShieldSettingsUiState,
+    imagePickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    defaultShieldImages: List<ShieldImage>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        ShieldContentCard(uiState)
+        ShieldImageSelectorCard(uiState, imagePickerLauncher, defaultShieldImages)
+        ShieldActionButtons(uiState)
+    }
+}
+
+@Composable
+private fun ShieldContentCard(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    SectionCard(
+        modifier = modifier,
+        icon = Icons.Default.EditNote,
+        title = "Content"
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            InputField(
+                label = "Headline",
+                value = uiState.config.headline,
+                onValueChange = uiState.onHeadlineChange,
+                placeholder = "Enter shield headline..."
+            )
+            InputField(
+                label = "Sub-headline",
+                value = uiState.config.subHeadline,
+                onValueChange = uiState.onSubHeadlineChange,
+                placeholder = "Enter shield message...",
+                singleLine = false,
+                minLines = 2
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShieldImageSelectorCard(
+    uiState: ShieldSettingsUiState,
+    imagePickerLauncher: androidx.activity.result.ActivityResultLauncher<String>,
+    defaultShieldImages: List<ShieldImage>,
+    modifier: Modifier = Modifier
+) {
+    SectionCard(
+        modifier = modifier,
+        icon = Icons.Default.Image,
+        title = "Shield Image",
+        trailing = {
+            Button(
+                onClick = { imagePickerLauncher.launch("image/*") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = CircleShape,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Upload", style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    ) {
+        ShieldImageSelector(uiState, defaultShieldImages)
+    }
+}
+
+@Composable
+private fun ShieldActionButtons(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(
+            onClick = uiState.onResetToDefaults,
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+        ) {
+            Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Reset to Defaults", style = MaterialTheme.typography.labelLarge)
+        }
+        Button(
+            onClick = uiState.onSave,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = CircleShape,
+            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+        ) {
+            Text("Save Changes", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+}
+
+@Composable
+private fun ShieldImageSelector(
+    uiState: ShieldSettingsUiState,
+    defaultShieldImages: List<ShieldImage>,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        defaultShieldImages.forEach { image ->
+            val isSelected = uiState.selectedImage == image
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(
+                        width = if (isSelected) 4.dp else 0.dp,
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clickable { uiState.onImageSelected(image) }
+            ) {
+                AsyncImage(
+                    model = when (image) {
+                        is ShieldImage.Resource -> image.resId
+                        is ShieldImage.UriImage -> image.uri
+                    },
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                if (isSelected) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(SHIELD_ASPECT_RATIO)
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(Color.Black)
-                            .border(8.dp, MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(32.dp))
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // Shield Background
-                        AsyncImage(
-                            model = when (val image = uiState.selectedImage) {
-                                is ShieldImage.Resource -> image.resId
-                                is ShieldImage.UriImage -> image.uri
-                            },
+                        Icon(
+                            Icons.Default.CheckCircle,
                             contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().drawWithContent {
-                                drawContent()
-                                drawRect(Color.Black.copy(alpha = 0.4f))
-                            }
+                            tint = Color.White
                         )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                                            Color.Transparent,
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                        )
-                                    )
-                                )
-                        )
-
-                        // Shield Content
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape)
-                                    .background(Color.White.copy(alpha = 0.1f), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Shield,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(32.dp))
-                            Text(
-                                text = uiState.config.headline.ifEmpty { "Peace of Mind" },
-                                style = MaterialTheme.typography.displaySmall.copy(
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = uiState.config.subHeadline.ifEmpty { "Your sanctuary is active. Take a deep breath and reconnect with the present moment." },
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = Color.White.copy(alpha = 0.9f),
-                                    textAlign = TextAlign.Center
-                                ),
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-
-                            Box(modifier = Modifier.fillMaxHeight().weight(1f))
-
-                            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(4.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.2f))
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth(PROGRESS_BAR_WIDTH_FRACTION)
-                                            .fillMaxHeight()
-                                            .background(Color.White.copy(alpha = 0.8f))
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    "12 MINUTES REMAINING",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = Color.White.copy(alpha = 0.6f),
-                                        letterSpacing = 1.sp
-                                    )
-                                )
-                            }
-                        }
                     }
-                    Text(
-                        "This is how your shield will appear on your device.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
-                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ShieldLivePreview(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "LIVE PREVIEW",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 2.sp
+                )
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
+                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer))
+                Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer))
+            }
+        }
+
+        ShieldPreviewBox(uiState)
+
+        Text(
+            "This is how your shield will appear on your device.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShieldPreviewBox(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(SHIELD_ASPECT_RATIO)
+            .clip(RoundedCornerShape(32.dp))
+            .background(Color.Black)
+            .border(8.dp, MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(32.dp))
+    ) {
+        // Shield Background
+        AsyncImage(
+            model = when (val image = uiState.selectedImage) {
+                is ShieldImage.Resource -> image.resId
+                is ShieldImage.UriImage -> image.uri
+            },
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().drawWithContent {
+                drawContent()
+                drawRect(Color.Black.copy(alpha = 0.4f))
+            }
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        )
+                    )
+                )
+        )
+
+        // Shield Content
+        ShieldPreviewContent(uiState)
+    }
+}
+
+@Composable
+private fun ShieldPreviewContent(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        ShieldPreviewIcon()
+        Spacer(modifier = Modifier.height(32.dp))
+        ShieldPreviewText(uiState)
+        Box(modifier = Modifier.fillMaxHeight().weight(1f))
+        ShieldPreviewProgress()
+    }
+}
+
+@Composable
+private fun ShieldPreviewIcon(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(80.dp)
+            .border(2.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+            .background(Color.White.copy(alpha = 0.1f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.Shield,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(40.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShieldPreviewText(
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = uiState.config.headline.ifEmpty { "Peace of Mind" },
+            style = MaterialTheme.typography.displaySmall.copy(
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = uiState.config.subHeadline.ifEmpty {
+                "Your sanctuary is active. Take a deep breath and reconnect with the present moment."
+            },
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center
+            ),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+}
+
+@Composable
+private fun ShieldPreviewProgress(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.2f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(PROGRESS_BAR_WIDTH_FRACTION)
+                    .fillMaxHeight()
+                    .background(Color.White.copy(alpha = 0.8f))
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "12 MINUTES REMAINING",
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = Color.White.copy(alpha = 0.6f),
+                letterSpacing = 1.sp
+            )
+        )
     }
 }
 

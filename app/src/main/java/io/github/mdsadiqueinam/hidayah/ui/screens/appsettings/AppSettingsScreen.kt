@@ -157,130 +157,137 @@ fun RestrictionSettingsCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "RESTRICTION SETTINGS",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 1.2.sp
-                )
-            }
-
+            RestrictionSettingsHeader()
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Daily Time Limit
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = "Daily Time Limit",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = if (dailyLimit == 0) "None" else dailyLimit.toString(),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        if (dailyLimit > 0) {
-                            Text(
-                                text = "m",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Slider(
-                    value = if (dailyLimit == 0) 0f else dailyLimit.toFloat(),
-                    onValueChange = { onDailyLimitChange(it.toInt()) },
-                    valueRange = 0f..120f,
-                    steps = 23, // 5m intervals
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                    )
-                )
-
-                Text(
-                    text = "Maximum usage allowed per 24 hours.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
+            DailyLimitSection(dailyLimit, onDailyLimitChange)
             Spacer(modifier = Modifier.height(32.dp))
+            SessionDurationSection(sessionDuration, onSessionDurationChange)
+        }
+    }
+}
 
-            // Session Duration
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = "Session Duration",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = if (sessionDuration == 0) "None" else sessionDuration.toString(),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        if (sessionDuration > 0) {
-                            Text(
-                                text = "m",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
-                            )
-                        }
-                    }
-                }
+@Composable
+private fun RestrictionSettingsHeader(modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.History,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "RESTRICTION SETTINGS",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            letterSpacing = 1.2.sp
+        )
+    }
+}
 
-                Spacer(modifier = Modifier.height(8.dp))
+@Composable
+private fun DailyLimitSection(
+    dailyLimit: Int,
+    onDailyLimitChange: (Int?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = "Daily Time Limit",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            LimitValueDisplay(dailyLimit)
+        }
 
-                Slider(
-                    value = if (sessionDuration == 0) 0f else sessionDuration.toFloat(),
-                    onValueChange = { onSessionDurationChange(it.toInt()) },
-                    valueRange = 0f..30f,
-                    steps = 29, // 1m intervals
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                    )
-                )
+        Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "Break reminder after continuous usage.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Slider(
+            value = if (dailyLimit == 0) 0f else dailyLimit.toFloat(),
+            onValueChange = { onDailyLimitChange(it.toInt()) },
+            valueRange = 0f..120f,
+            steps = 23,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            )
+        )
+
+        Text(
+            text = "Maximum usage allowed per 24 hours.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun SessionDurationSection(
+    sessionDuration: Int,
+    onSessionDurationChange: (Int?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = "Session Duration",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            LimitValueDisplay(sessionDuration)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Slider(
+            value = if (sessionDuration == 0) 0f else sessionDuration.toFloat(),
+            onValueChange = { onSessionDurationChange(it.toInt()) },
+            valueRange = 0f..30f,
+            steps = 29,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            )
+        )
+
+        Text(
+            text = "Break reminder after continuous usage.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun LimitValueDisplay(value: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = if (value == 0) "None" else value.toString(),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        if (value > 0) {
+            Text(
+                text = "m",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+            )
         }
     }
 }

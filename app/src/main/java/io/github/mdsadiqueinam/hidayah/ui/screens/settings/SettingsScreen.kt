@@ -52,42 +52,7 @@ fun SettingsScreen(
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Spa,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Hidayah",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                actions = {
-                    // Profile image mock
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                            .border(1.dp, Color.White, CircleShape)
-                    )
-                }
-            )
-        }
+        topBar = { SettingsTopBar() }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -98,27 +63,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
-            item {
-                Column {
-                    Text(
-                        "PREFERENCES",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.secondary,
-                            letterSpacing = 2.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Text(
-                        "Settings",
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
+            item { SettingsHeader() }
             item {
                 SettingsCard(
                     title = "Customize Shield",
@@ -129,6 +74,67 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsTopBar(modifier: Modifier = Modifier) {
+    TopAppBar(
+        modifier = modifier,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Spa,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Hidayah",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
+        actions = {
+            Box(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .border(1.dp, Color.White, CircleShape)
+            )
+        }
+    )
+}
+
+@Composable
+private fun SettingsHeader(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            "PREFERENCES",
+            style = MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.secondary,
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            "Settings",
+            style = MaterialTheme.typography.displaySmall.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable
