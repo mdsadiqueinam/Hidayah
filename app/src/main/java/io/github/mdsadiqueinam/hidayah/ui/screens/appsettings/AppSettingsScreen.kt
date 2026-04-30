@@ -1,6 +1,8 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.appsettings
 
-import androidx.compose.foundation.Image
+import android.content.Intent
+import android.widget.ImageView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,16 +13,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,126 +36,389 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
-import io.github.mdsadiqueinam.hidayah.ui.components.FlowButton
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSettingsScreen(
     onBack: () -> Unit,
     viewModel: AppSettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    AppSettingsScreenContent(uiState, onBack)
+}
+
+@Composable
+fun AppSettingsTopAppBar(onBack: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .height(64.dp)
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primaryContainer
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "App Settings",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AppIdentityHero(app: ControlledApp) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier.size(80.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            shadowElevation = 2.dp,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.2f))
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(16.dp)) {
+                AppIcon(packageName = app.packageName, modifier = Modifier.fillMaxSize())
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = app.appName,
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Text(
+            text = "Managing your digital sanctuary",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun RestrictionSettingsCard(
+    dailyLimit: Int,
+    sessionDuration: Int,
+    onDailyLimitChange: (Int?) -> Unit,
+    onSessionDurationChange: (Int?) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "RESTRICTION SETTINGS",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.2.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Daily Time Limit
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = "Daily Time Limit",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = if (dailyLimit == 0) "None" else dailyLimit.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (dailyLimit > 0) {
+                            Text(
+                                text = "m",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Slider(
+                    value = if (dailyLimit == 0) 0f else dailyLimit.toFloat(),
+                    onValueChange = { onDailyLimitChange(it.toInt()) },
+                    valueRange = 0f..120f,
+                    steps = 23, // 5m intervals
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    )
+                )
+                
+                Text(
+                    text = "Maximum usage allowed per 24 hours.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Session Duration
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = "Session Duration",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = if (sessionDuration == 0) "None" else sessionDuration.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (sessionDuration > 0) {
+                            Text(
+                                text = "m",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Slider(
+                    value = if (sessionDuration == 0) 0f else sessionDuration.toFloat(),
+                    onValueChange = { onSessionDurationChange(it.toInt()) },
+                    valueRange = 0f..30f,
+                    steps = 29, // 1m intervals
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    )
+                )
+                
+                Text(
+                    text = "Break reminder after continuous usage.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GentleInsightCard() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.padding(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lightbulb,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(24.dp)
+            )
+            Column {
+                Text(
+                    text = "Gentle Insight",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Reducing your daily limit by just 5 minutes can save you 30 hours of time every year.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    lineHeight = 18.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ManagementSection(onRemove: () -> Unit) {
+    Column {
+        Button(
+            onClick = onRemove,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = CircleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.error
+            ),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.DeleteSweep,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Un-monitor this app",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "This will stop Hidayah from tracking or limiting your usage immediately.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+        )
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
+@Composable
+fun AppSettingsScreenPreview() {
+    val mockApp = io.github.mdsadiqueinam.hidayah.data.ControlledApp(
+        packageName = "com.instagram.android",
+        appName = "Instagram",
+        dailyLimit = 30,
+        sessionLimit = 10
+    )
+    val mockUiState = AppSettingsUiState(
+        app = mockApp
+    )
+    
+    io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AppSettingsScreenContent(mockUiState, onBack = {})
+        }
+    }
+}
+
+@Composable
+fun AppSettingsScreenContent(
+    uiState: AppSettingsUiState,
+    onBack: () -> Unit
+) {
     val app = uiState.app
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("App Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+        topBar = { AppSettingsTopAppBar(onBack) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         if (app == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 16.dp, bottom = 100.dp)
             ) {
-                item { AppIdentityCard(app) }
+                item { AppIdentityHero(app) }
 
                 item {
-                    SettingsGridCard(
-                        title = "Daily Limits",
-                        description = "How many times this app can be opened in a day",
-                        icon = Icons.Default.Schedule,
-                        options = listOf(0, 1, 2, 3, 4, 5, 6),
-                        labels = listOf(
-                            "No Limit",
-                            "1 time",
-                            "2 times",
-                            "3 times",
-                            "4 times",
-                            "5 times",
-                            "6 times"
-                        ),
-                        selectedOption = app.dailyLimit,
-                        onOptionSelected = uiState.onDailyLimitChange
+                    RestrictionSettingsCard(
+                        dailyLimit = app.dailyLimit,
+                        sessionDuration = app.sessionLimit,
+                        onDailyLimitChange = uiState.onDailyLimitChange,
+                        onSessionDurationChange = uiState.onSessionLimitChange
                     )
                 }
 
-                item {
-                    SettingsGridCard(
-                        title = "Open Delay",
-                        description = "Wait time before app opens",
-                        icon = Icons.Default.HourglassEmpty,
-                        options = listOf(0, 10, 20, 30, 40, 50, 60),
-                        labels = listOf("0s", "10s", "20s", "30s", "40s", "50s", "1m"),
-                        selectedOption = app.openDelay,
-                        onOptionSelected = uiState.onOpenDelayChange
-                    )
-                }
+                item { GentleInsightCard() }
 
                 item {
-                    SettingsGridCard(
-                        title = "Session Limit",
-                        description = "Maximum duration for a single session",
-                        icon = Icons.Default.Timer,
-                        options = listOf(0, 1, 2, 5, 10, 15, 30, 45, 60, 120, 180),
-                        labels = listOf(
-                            "No Limit",
-                            "1m",
-                            "2m",
-                            "5m",
-                            "10m",
-                            "15m",
-                            "30m",
-                            "45m",
-                            "1h",
-                            "2h",
-                            "3h"
-                        ),
-                        selectedOption = app.sessionLimit,
-                        onOptionSelected = uiState.onSessionLimitChange
-                    )
-                }
-
-                item {
-                    HardLockCard(
-                        isLocked = app.isHardLocked,
-                        onToggle = uiState.onHardLockToggle
-                    )
-                }
-
-                item {
-                    RemoveAppCard(
+                    ManagementSection(
                         onRemove = {
                             uiState.onRemoveApp()
                             onBack()
@@ -161,164 +431,32 @@ fun AppSettingsScreen(
 }
 
 @Composable
-fun RemoveAppCard(onRemove: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        onClick = onRemove
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(Modifier.width(16.dp))
-            Text(
-                "Remove App",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
-fun AppIdentityCard(app: ControlledApp) {
+fun AppIcon(packageName: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val icon = remember(app.packageName) {
+    val icon = remember(packageName) {
         try {
-            context.packageManager.getApplicationIcon(app.packageName).toBitmap().asImageBitmap()
+            context.packageManager.getApplicationIcon(packageName)
         } catch (e: Exception) {
             null
         }
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (icon != null) {
-                Image(
-                    bitmap = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp)
-                )
-            } else {
-                Surface(
-                    modifier = Modifier.size(64.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(8.dp)
-                ) {}
-            }
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(
-                    app.appName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    app.packageName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun <T> SettingsGridCard(
-    title: String,
-    description: String,
-    icon: ImageVector,
-    options: List<T>,
-    labels: List<String>,
-    selectedOption: T,
-    onOptionSelected: (T?) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-
-            FlowButton(
-                options = options,
-                labels = labels,
-                selectedOption = selectedOption,
-                onOptionSelected = onOptionSelected,
-                maxItemsInEachRow = 3,
-                isToggleable = true
-            )
-        }
-    }
-}
-
-@Composable
-fun HardLockCard(isLocked: Boolean, onToggle: (Boolean) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isLocked) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant
+    if (icon != null) {
+        AndroidView(
+            factory = { ctx ->
+                ImageView(ctx).apply {
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    setImageDrawable(icon)
+                }
+            },
+            modifier = modifier
         )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                tint = if (isLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    "Hard Lock",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text("Completely block this app", style = MaterialTheme.typography.bodyMedium)
-            }
-            Switch(checked = isLocked, onCheckedChange = onToggle)
-        }
+    } else {
+        Icon(
+            imageVector = Icons.Default.Apps,
+            contentDescription = null,
+            modifier = modifier,
+            tint = MaterialTheme.colorScheme.outline
+        )
     }
 }
