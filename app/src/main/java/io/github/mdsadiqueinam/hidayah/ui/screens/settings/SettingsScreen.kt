@@ -41,6 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.ui.tooling.preview.Preview
+import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -183,5 +186,13 @@ fun SettingsCard(
                 tint = MaterialTheme.colorScheme.outline
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    HidayahTheme {
+        SettingsScreen()
     }
 }

@@ -37,7 +37,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -59,12 +58,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
+import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +75,18 @@ fun ShieldSettingsScreen(
     viewModel: ShieldSettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    ShieldSettingsScreenContent(
+        onBack = onBack,
+        uiState = uiState
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShieldSettingsScreenContent(
+    onBack: () -> Unit,
+    uiState: ShieldSettingsUiState
+) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
@@ -244,13 +257,14 @@ fun ShieldSettingsScreen(
                     }
 
                     // Actions
-                    Column(
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedButton(
+                        TextButton(
                             onClick = uiState.onResetToDefaults,
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                            modifier = Modifier.fillMaxWidth()
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                         ) {
                             Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
@@ -263,7 +277,7 @@ fun ShieldSettingsScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = CircleShape,
-                            modifier = Modifier.fillMaxWidth()
+                            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
                         ) {
                             Text("Save Changes", style = MaterialTheme.typography.titleMedium)
                         }
@@ -407,6 +421,22 @@ fun ShieldSettingsScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ShieldSettingsScreenPreview() {
+    HidayahTheme {
+        ShieldSettingsScreenContent(
+            onBack = {},
+            uiState = ShieldSettingsUiState(
+                config = ShieldConfig(
+                    headline = "Peace of Mind",
+                    subHeadline = "Your sanctuary is active. Take a deep breath."
+                )
+            )
+        )
     }
 }
 
