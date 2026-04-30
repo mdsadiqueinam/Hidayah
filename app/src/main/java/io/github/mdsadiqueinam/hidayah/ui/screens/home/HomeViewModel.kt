@@ -3,6 +3,7 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.home
 import android.app.AppOpsManager
 import android.content.Context
 import android.os.Process
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +47,7 @@ data class HomeUiState(
     val totalScreenTime: String = "0h 0m",
     val controlledScreenTime: String = "0h 0m",
     val screenTimeLimit: String = "5h 0m",
-    val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(5),
+    val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(DEFAULT_SCREEN_TIME_LIMIT_HOURS),
     val totalScreenTimeMs: Long = 0,
     val controlledScreenTimeMs: Long = 0,
     val screenTimePercentage: String = "0% of the day",
@@ -64,6 +65,17 @@ class HomeViewModel @Inject constructor(
     private val repository: AppRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    companion object {
+        private const val MILLIS_PER_HOUR = 1000 * 60 * 60
+        private const val REFRESH_INTERVAL_MS = 60000L
+        private const val EXCELLENT_THRESHOLD_HOURS = 2
+        private const val GOOD_THRESHOLD_HOURS = 3
+        private const val MODERATE_THRESHOLD_HOURS = 4
+        private const val HIGH_THRESHOLD_HOURS = 5
+        private const val DEFAULT_SCREEN_TIME_LIMIT_HOURS = 5L
+        private const val TOP_APPS_LIMIT = 3
+    }
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -169,7 +181,7 @@ class HomeViewModel @Inject constructor(
                 if (_uiState.value.isUsageStatsPermissionGranted) {
                     refreshUsageStats()
                 }
-                delay(60000) // Refresh every minute
+                delay(REFRESH_INTERVAL_MS)
             }
         }
     }
@@ -188,67 +200,20 @@ class HomeViewModel @Inject constructor(
 
         val stats = repository.getDailyUsageStats()
         val controlledPackageNames = rawControlledApps.map { it.packageName }.toSet()
-        
-        // Total screen time
-        val totalTimeMs = stats.values.sumOf { it.totalTimeInForeground }
-        val totalTimeHours = totalTimeMs.toDouble() / (1000 * 60 * 60)
 
-        // Controlled screen time
-        val controlledTimeMs = stats.filter { controlledPackageNames.contains(it.key) }
-            .values.sumOf { it.totalTimeInForeground }
+        // Calculate screen time totals
+        val totalTimeMs = calculateTotalScreenTime(stats)
+        val controlledTimeMs = calculateControlledScreenTime(stats, controlledPackageNames)
 
-        val status = when {
-            totalTimeHours < 2 -> "Excellent"
-            totalTimeHours < 3 -> "Good"
-            totalTimeHours < 4 -> "Moderate"
-            totalTimeHours < 5 -> "High"
-            else -> "Very High"
-        }
+        // Determine status
+        val totalTimeHours = totalTimeMs.toDouble() / MILLIS_PER_HOUR
+        val status = calculateScreenTimeStatus(totalTimeHours)
 
-        val topApps = stats.values
-            .filter { it.totalTimeInForeground > 0 }
-            .sortedByDescending { it.totalTimeInForeground }
-            .take(3)
-            .map {
-                val packageManager = context.packageManager
-                val appName = try {
-                    val appInfo = packageManager.getApplicationInfo(it.packageName, 0)
-                    packageManager.getApplicationLabel(appInfo).toString()
-                } catch (e: Exception) {
-                    it.packageName
-                }
-                val appCategory = try {
-                    val appInfo = packageManager.getApplicationInfo(it.packageName, 0)
-                    when (appInfo.category) {
-                        android.content.pm.ApplicationInfo.CATEGORY_AUDIO -> "Audio"
-                        android.content.pm.ApplicationInfo.CATEGORY_GAME -> "Games"
-                        android.content.pm.ApplicationInfo.CATEGORY_IMAGE -> "Image"
-                        android.content.pm.ApplicationInfo.CATEGORY_MAPS -> "Maps"
-                        android.content.pm.ApplicationInfo.CATEGORY_NEWS -> "News"
-                        android.content.pm.ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
-                        android.content.pm.ApplicationInfo.CATEGORY_SOCIAL -> "Social"
-                        android.content.pm.ApplicationInfo.CATEGORY_VIDEO -> "Video"
-                        else -> "App"
-                    }
-                } catch (e: Exception) {
-                    "App"
-                }
-                TopApp(
-                    name = appName,
-                    usage = formatDuration(it.totalTimeInForeground),
-                    category = appCategory,
-                    packageName = it.packageName
-                )
-            }
+        // Build lists
+        val topApps = buildTopAppsList(stats)
+        val controlledAppsWithUsage = buildControlledAppsList(stats)
 
-        val controlledAppsWithUsage = rawControlledApps.map { app ->
-            ControlledAppWithUsage(
-                app = app,
-                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
-                limit = if (app.dailyLimit > 0) formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong())) else "No limit"
-            )
-        }
-
+        // Update UI state
         _uiState.update { state ->
             state.copy(
                 totalScreenTime = formatDuration(totalTimeMs),
@@ -258,6 +223,103 @@ class HomeViewModel @Inject constructor(
                 screenTimeStatus = status,
                 topApps = topApps,
                 controlledApps = controlledAppsWithUsage
+            )
+        }
+    }
+
+    private fun calculateTotalScreenTime(
+        stats: Map<String, android.app.usage.UsageStats>
+    ): Long {
+        return stats.values.sumOf { it.totalTimeInForeground }
+    }
+
+    private fun calculateControlledScreenTime(
+        stats: Map<String, android.app.usage.UsageStats>,
+        controlledPackageNames: Set<String>
+    ): Long {
+        return stats.filter { controlledPackageNames.contains(it.key) }
+            .values.sumOf { it.totalTimeInForeground }
+    }
+
+    private fun calculateScreenTimeStatus(totalTimeHours: Double): String {
+        return when {
+            totalTimeHours < EXCELLENT_THRESHOLD_HOURS -> "Excellent"
+            totalTimeHours < GOOD_THRESHOLD_HOURS -> "Good"
+            totalTimeHours < MODERATE_THRESHOLD_HOURS -> "Moderate"
+            totalTimeHours < HIGH_THRESHOLD_HOURS -> "High"
+            else -> "Very High"
+        }
+    }
+
+    private fun buildTopAppsList(
+        stats: Map<String, android.app.usage.UsageStats>
+    ): List<TopApp> {
+        return stats.values
+            .filter { it.totalTimeInForeground > 0 }
+            .sortedByDescending { it.totalTimeInForeground }
+            .take(TOP_APPS_LIMIT)
+            .map { usageStats ->
+                val appName = getApplicationName(usageStats.packageName)
+                val appCategory = getApplicationCategory(usageStats.packageName)
+                TopApp(
+                    name = appName,
+                    usage = formatDuration(usageStats.totalTimeInForeground),
+                    category = appCategory,
+                    packageName = usageStats.packageName
+                )
+            }
+    }
+
+    private fun getApplicationName(packageName: String): String {
+        return try {
+            val packageManager = context.packageManager
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            Log.w("HomeViewModel", "Package not found: $packageName")
+            packageName
+        } catch (e: SecurityException) {
+            Log.w("HomeViewModel", "Security exception getting app info for $packageName")
+            packageName
+        }
+    }
+
+    private fun getApplicationCategory(packageName: String): String {
+        return try {
+            val packageManager = context.packageManager
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            when (appInfo.category) {
+                android.content.pm.ApplicationInfo.CATEGORY_AUDIO -> "Audio"
+                android.content.pm.ApplicationInfo.CATEGORY_GAME -> "Games"
+                android.content.pm.ApplicationInfo.CATEGORY_IMAGE -> "Image"
+                android.content.pm.ApplicationInfo.CATEGORY_MAPS -> "Maps"
+                android.content.pm.ApplicationInfo.CATEGORY_NEWS -> "News"
+                android.content.pm.ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
+                android.content.pm.ApplicationInfo.CATEGORY_SOCIAL -> "Social"
+                android.content.pm.ApplicationInfo.CATEGORY_VIDEO -> "Video"
+                else -> "App"
+            }
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            Log.w("HomeViewModel", "Package not found: $packageName")
+            "App"
+        } catch (e: SecurityException) {
+            Log.w("HomeViewModel", "Security exception getting category for $packageName")
+            "App"
+        }
+    }
+
+    private fun buildControlledAppsList(
+        stats: Map<String, android.app.usage.UsageStats>
+    ): List<ControlledAppWithUsage> {
+        return rawControlledApps.map { app ->
+            ControlledAppWithUsage(
+                app = app,
+                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
+                limit = if (app.dailyLimit > 0) {
+                    formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
+                } else {
+                    "No limit"
+                }
             )
         }
     }

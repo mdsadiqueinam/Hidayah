@@ -69,7 +69,9 @@ fun SavedAppCard(
     val icon = remember(packageName) {
         try {
             packageManager.getApplicationIcon(packageName).toBitmap().asImageBitmap()
-        } catch (e: Exception) {
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            null
+        } catch (e: SecurityException) {
             null
         }
     }

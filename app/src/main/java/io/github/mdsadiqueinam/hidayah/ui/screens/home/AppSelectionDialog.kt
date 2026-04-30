@@ -36,6 +36,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
+private const val DIALOG_MAX_HEIGHT_FRACTION = 0.85f
+
 @Composable
 fun AppSelectionDialog(
     onDismiss: () -> Unit,
@@ -50,7 +52,7 @@ fun AppSelectionDialog(
             tonalElevation = 6.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.85f)
+                .fillMaxHeight(DIALOG_MAX_HEIGHT_FRACTION)
                 .then(modifier)
         ) {
             Column(
@@ -130,7 +132,9 @@ fun AppRow(
     val icon = remember(packageName) {
         try {
             packageManager.getApplicationIcon(packageName).toBitmap().asImageBitmap()
-        } catch (e: Exception) {
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            null
+        } catch (e: SecurityException) {
             null
         }
     }

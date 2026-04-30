@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 
+private const val QUOTE_ICON_ALPHA = 0.6f
+
 @Composable
 fun AppIconContainer(
     packageName: String,
@@ -106,7 +108,7 @@ fun MindfulQuoteCard(modifier: Modifier = Modifier) {
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
                         .size(32.dp)
-                        .alpha(0.6f)
+                        .alpha(QUOTE_ICON_ALPHA)
                 )
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(

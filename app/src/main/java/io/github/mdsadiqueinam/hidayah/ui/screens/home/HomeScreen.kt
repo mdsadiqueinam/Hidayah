@@ -27,6 +27,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
+private const val GRADIENT_RADIUS = 800f
+private const val GRADIENT_CENTER_X = 1000f
+
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
@@ -96,8 +99,8 @@ private fun HomeScreenContent(
                         MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.15f),
                         Color.Transparent
                     ),
-                    center = androidx.compose.ui.geometry.Offset(1000f, 0f),
-                    radius = 800f
+                    center = androidx.compose.ui.geometry.Offset(GRADIENT_CENTER_X, 0f),
+                    radius = GRADIENT_RADIUS
                 )
             )
     ) {

@@ -45,10 +45,15 @@ import coil3.compose.AsyncImage
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
 
+private const val BACKGROUND_IMAGE_ALPHA = 0.6f
+private const val BACKGROUND_OVERLAY_ALPHA = 0.4f
+private const val PROGRESS_BAR_WIDTH_MOCK = 0.3f
+
 @Composable
 fun ShieldScreen(
     onClose: () -> Unit,
     onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: ShieldViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -66,7 +71,7 @@ fun ShieldScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black).then(modifier)) {
         // Shield Background
         AsyncImage(
             model = when (shieldImage) {
@@ -75,9 +80,9 @@ fun ShieldScreen(
             },
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().alpha(0.6f).drawWithContent {
+            modifier = Modifier.fillMaxSize().alpha(BACKGROUND_IMAGE_ALPHA).drawWithContent {
                 drawContent()
-                drawRect(Color.Black.copy(alpha = 0.4f))
+                drawRect(Color.Black.copy(alpha = BACKGROUND_OVERLAY_ALPHA))
             }
         )
         
@@ -214,7 +219,7 @@ fun ShieldScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.3f) // Just a visual mock
+                            .fillMaxWidth(PROGRESS_BAR_WIDTH_MOCK) // Just a visual mock
                             .fillMaxHeight()
                             .background(Color.White.copy(alpha = 0.8f))
                     )

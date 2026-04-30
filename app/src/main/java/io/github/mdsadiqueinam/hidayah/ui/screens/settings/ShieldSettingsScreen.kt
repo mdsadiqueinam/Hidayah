@@ -68,6 +68,9 @@ import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
 import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 
+private const val SHIELD_ASPECT_RATIO = 9f / 16f
+private const val PROGRESS_BAR_WIDTH_FRACTION = 0.66f
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShieldSettingsScreen(
@@ -314,7 +317,7 @@ fun ShieldSettingsScreenContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(9f / 16f)
+                            .aspectRatio(SHIELD_ASPECT_RATIO)
                             .clip(RoundedCornerShape(32.dp))
                             .background(Color.Black)
                             .border(8.dp, MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(32.dp))
@@ -399,7 +402,7 @@ fun ShieldSettingsScreenContent(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxWidth(0.66f)
+                                            .fillMaxWidth(PROGRESS_BAR_WIDTH_FRACTION)
                                             .fillMaxHeight()
                                             .background(Color.White.copy(alpha = 0.8f))
                                     )

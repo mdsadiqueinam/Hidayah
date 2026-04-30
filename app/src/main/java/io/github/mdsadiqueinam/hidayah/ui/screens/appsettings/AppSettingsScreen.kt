@@ -442,7 +442,9 @@ fun AppIcon(packageName: String, modifier: Modifier = Modifier) {
     val icon = remember(packageName) {
         try {
             context.packageManager.getApplicationIcon(packageName)
-        } catch (e: Exception) {
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            null
+        } catch (e: SecurityException) {
             null
         }
     }
