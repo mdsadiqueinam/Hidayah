@@ -118,7 +118,10 @@ fun AppIdentityHero(app: ControlledApp, modifier: Modifier = Modifier) {
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceContainerLowest,
             shadowElevation = 2.dp,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.2f))
+            border = androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.2f)
+            )
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(16.dp)) {
                 AppIcon(packageName = app.packageName, modifier = Modifier.fillMaxSize())
@@ -298,7 +301,10 @@ fun GentleInsightCard(modifier: Modifier = Modifier) {
         modifier = Modifier.fillMaxWidth().then(modifier),
         shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+        )
     ) {
         Row(
             modifier = Modifier.padding(24.dp),
