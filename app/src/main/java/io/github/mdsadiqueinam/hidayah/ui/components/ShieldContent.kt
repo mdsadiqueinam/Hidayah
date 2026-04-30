@@ -66,7 +66,14 @@ fun ShieldContent(
                 val uri = imagePath.toUri()
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                 ImageDecoder.decodeBitmap(source)
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
+                android.util.Log.w("ShieldContent", "Invalid image path: $imagePath", e)
+                null
+            } catch (e: java.io.IOException) {
+                android.util.Log.w("ShieldContent", "I/O error decoding image: $imagePath", e)
+                null
+            } catch (e: SecurityException) {
+                android.util.Log.w("ShieldContent", "Security exception decoding image: $imagePath", e)
                 null
             }
         } else {

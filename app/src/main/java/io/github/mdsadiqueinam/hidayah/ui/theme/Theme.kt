@@ -65,6 +65,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun HidayahTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is disabled to match the redesign exactly

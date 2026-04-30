@@ -24,7 +24,7 @@ fun <T> FlowButton(
     options: List<T>,
     labels: List<String>,
     selectedOption: T?,
-    onOptionSelected: (T?) -> Unit,
+    onOptionSelect: (T?) -> Unit,
     maxItemsInEachRow: Int,
     modifier: Modifier = Modifier,
     isToggleable: Boolean = false
@@ -47,9 +47,9 @@ fun <T> FlowButton(
                         selected = isSelected,
                         onClick = {
                             if (isToggleable && isSelected) {
-                                onOptionSelected(null)
+                                onOptionSelect(null)
                             } else {
-                                onOptionSelected(option)
+                                onOptionSelect(option)
                             }
                         },
                         label = {
@@ -89,7 +89,7 @@ fun <T> FlowButton(
 
 @Preview
 @Composable
-fun FlowButtonPreview() {
+private fun FlowButtonPreview() {
     val options = listOf(1, 2, 3, 4, 5)
     val labels = listOf("Option 1", "Option 2", "Option 3", "Option 4", "Option 5")
 
@@ -99,7 +99,7 @@ fun FlowButtonPreview() {
                 options = options,
                 labels = labels,
                 selectedOption = 1,
-                onOptionSelected = {},
+                onOptionSelect = {},
                 maxItemsInEachRow = 3,
                 isToggleable = true
             )

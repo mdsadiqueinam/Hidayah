@@ -47,7 +47,8 @@ import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateToShieldSettings: () -> Unit = {}
+    onNavigateToShieldSettings: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -92,7 +93,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .then(modifier),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
@@ -134,11 +136,12 @@ fun SettingsCard(
     title: String,
     description: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(modifier),
         shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
         shadowElevation = 2.dp
@@ -191,7 +194,7 @@ fun SettingsCard(
 
 @Preview(showBackground = true)
 @Composable
-fun SettingsScreenPreview() {
+private fun SettingsScreenPreview() {
     HidayahTheme {
         SettingsScreen()
     }

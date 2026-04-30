@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Hidayah Global Shield Settings</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e6e9e8",
+                      "outline": "#707977",
+                      "error": "#ba1a1a",
+                      "inverse-primary": "#a1cfca",
+                      "on-primary-fixed-variant": "#204e4a",
+                      "inverse-on-surface": "#eff1f0",
+                      "surface": "#f8faf9",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#2e3131",
+                      "primary": "#12423f",
+                      "on-primary-fixed": "#00201e",
+                      "on-secondary-container": "#4f6b59",
+                      "surface-container-highest": "#e1e3e2",
+                      "tertiary-fixed": "#ffddb5",
+                      "surface-variant": "#e1e3e2",
+                      "background": "#f8faf9",
+                      "outline-variant": "#c0c8c6",
+                      "on-primary": "#ffffff",
+                      "primary-fixed": "#bcece6",
+                      "surface-tint": "#396662",
+                      "on-background": "#191c1c",
+                      "on-tertiary-container": "#fbbb66",
+                      "secondary-container": "#cbead4",
+                      "surface-container": "#eceeed",
+                      "surface-dim": "#d8dada",
+                      "secondary-fixed-dim": "#b0ceb9",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f2f4f3",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#553500",
+                      "on-primary-container": "#a1cfca",
+                      "on-tertiary-fixed": "#2a1800",
+                      "primary-fixed-dim": "#a1cfca",
+                      "tertiary-fixed-dim": "#fabb65",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#f8faf9",
+                      "primary-container": "#2d5a56",
+                      "secondary-fixed": "#cbead4",
+                      "tertiary-container": "#744a00",
+                      "on-secondary-fixed": "#052013",
+                      "secondary": "#496453",
+                      "on-surface-variant": "#404847",
+                      "on-secondary-fixed-variant": "#324c3c",
+                      "on-tertiary-fixed-variant": "#643f00",
+                      "on-surface": "#191c1c",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "stack-gap": "20px",
+                      "sm": "8px",
+                      "unit": "4px",
+                      "container-padding": "24px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "xl": "40px"
+              },
+              "fontFamily": {
+                      "display": ["Manrope"],
+                      "headline-lg": ["Manrope"],
+                      "body-md": ["Manrope"],
+                      "label-caps": ["Manrope"],
+                      "body-lg": ["Manrope"],
+                      "headline-md": ["Manrope"],
+                      "stat-value": ["Manrope"]
+              },
+              "fontSize": {
+                      "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "stat-value": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-slate-50 dark:bg-gray-950 border-b border-teal-50 dark:border-teal-900/30 shadow-[0_4px_20px_rgba(45,90,86,0.05)]">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#2D5A56] dark:text-teal-400" data-icon="spa">spa</span>
+        <h1 class="text-xl font-bold text-[#2D5A56] dark:text-teal-500 font-['Manrope'] tracking-tight">Hidayah</h1>
+    </div>
+    <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+        <img alt="User Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a calm woman with a soft expression and natural lighting in a minimalist studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLxYExF0yLN-rAupmfBj4SiCF7lDxCaoLGka6MDOQTrTxE5PStfdokfBKnnGRWk-RvmXqfx6kyGkGCasI8-eAWmOU0ptASl2GMcWi78VoLvKY_RHSUAWW_wqpVsu-w1dOhR2f-cmlZ0IY9WfDepsB_u__AY88SbhGvQUVdENwcayaVLK2qlknBgmqn2FUUTLDjgPXQQefO-UtVNJe5e0gGChgqKA0LjcGVVcfasoIy1-nGj2cXuccMt3gMQxDq2yZEgBUBuT3JCNDO"/>
+    </div>
+</header>
+<main class="pt-24 px-container-padding max-w-5xl mx-auto">
+    <!-- Breadcrumb / Header -->
+    <div class="mb-xl">
+        <span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase mb-unit block">Privacy Configuration</span>
+        <h2 class="font-display text-display text-primary">Shield Settings</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-xs">Customize your sanctuary. Define how the Global Shield appears when you're reclaiming your focus.</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-xl items-start">
+        <!-- Left Column: Settings Form -->
+        <div class="lg:col-span-7 space-y-xl">
+            <!-- Text Inputs Card -->
+            <section class="bg-surface-container-lowest rounded-[24px] p-lg shadow-[0_4px_20px_rgba(45,90,86,0.05)]">
+                <div class="flex items-center gap-md mb-lg">
+                    <span class="material-symbols-outlined text-primary" data-icon="edit_note">edit_note</span>
+                    <h3 class="font-headline-md text-headline-md text-primary">Content</h3>
+                </div>
+                <div class="space-y-stack-gap">
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-caps text-label-caps text-on-surface-variant ml-unit">Headline</label>
+                        <input class="w-full bg-surface-container-low border-none rounded-xl px-md py-4 focus:ring-2 focus:ring-primary-container font-body-md text-on-surface" placeholder="Enter shield headline..." type="text" value="Peace of Mind"/>
+                    </div>
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-caps text-label-caps text-on-surface-variant ml-unit">Sub-headline</label>
+                        <textarea class="w-full bg-surface-container-low border-none rounded-xl px-md py-4 focus:ring-2 focus:ring-primary-container font-body-md text-on-surface resize-none" placeholder="Enter shield message..." rows="2">Your sanctuary is active. Take a deep breath and reconnect with the present moment.</textarea>
+                    </div>
+                </div>
+            </section>
+            <!-- Image Selector Card -->
+            <section class="bg-surface-container-lowest rounded-[24px] p-lg shadow-[0_4px_20px_rgba(45,90,86,0.05)]">
+                <div class="flex items-center justify-between mb-lg">
+                    <div class="flex items-center gap-md">
+                        <span class="material-symbols-outlined text-primary" data-icon="image">image</span>
+                        <h3 class="font-headline-md text-headline-md text-primary">Shield Image</h3>
+                    </div>
+                    <button class="bg-secondary-container text-primary px-md py-2 rounded-full font-label-caps text-[11px] flex items-center gap-sm hover:opacity-80 transition-opacity">
+                        <span class="material-symbols-outlined text-[18px]" data-icon="upload">upload</span>
+                        Upload
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-md">
+                    <!-- Image Options -->
+                    <div class="relative aspect-square rounded-xl overflow-hidden cursor-pointer ring-4 ring-primary-container group">
+                        <img class="w-full h-full object-cover" data-alt="Ethereal sunlight streaming through lush forest canopy with soft light rays and golden particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsXJR2_yPCuDYpADI5pih3mXQcYs8aQbCLN1hhSX5cFiEOxbnnwYsSjyekehzvY9KMgdfz1ElczJE5Gt3UqZ_nhzC_EOJ_eM_a1tuggJKc_xdZ4NBe71CvRZ3jmDWwSrYxXGimypaU5-MRpMv25V8uIJBezV-K4IzVYaPj9s2Z6hwcL3TMMB-U2Q4kN-xnRjEeDB0Kw7hDzLdJ8ulvr63iCxFzj6EcduwDHvQaGpnUGp7whhPArsIWNZ4IeglgJFqY7kjAGhz-Eve0"/>
+                        <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        </div>
+                    </div>
+                    <div class="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                        <img class="w-full h-full object-cover" data-alt="Serene mountain lake at dawn with perfectly still turquoise water reflecting snow-capped peaks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwz0BFatDn6OdnM4pD-zSoPQIj4Ng9hCias3LJLYrXCaqnq-Vvytcu9q6IB9gD9MvVMXIm31oiQlT81gn6D2PjEA99skae2RfhRPabx3puUhiZoulhdvd9c0v531Ij5chrX4f5iyRQkeKTXoCQKV-pm0KO16ZQmFo8hDHVrcyZecUfJiBgVHgmmSsbB4nM6PCVhGLdwoyGaVJevxBNZroKXk2GJSkKbyPbQG6_gK79-R4ei6mhXiNGhTt-zKpbtfTLb1kOPRyrXrgV"/>
+                    </div>
+                    <div class="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                        <img class="w-full h-full object-cover" data-alt="Soft sandy beach with gentle pastel blue ocean waves washing over the shore at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyDqwbBnqdDyN6fhpe_XhDavDsAdGwO37HJzJMtCUgrn_s0e2KYySJ3C9mepYU5U9O5ncmffbAl1GR3PyDHq9rNg09PVpg1Rtk7E_CCduC9loelCwlsLPDe-GN4ZchRNqBi9Kv77hadsSrGIgFAoGlK3xKAEbkJZ6ZxnR6P5OIRCbW7T9P_dEVC_nNHByyQISyPrLpowbiiqSR8PH8cttdDtBo6I0kLY9BgxnHRJo5BKIVGNQV9v_JUMuNOuuw_xU9eNK6RsoZZn1K"/>
+                    </div>
+                    <div class="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                        <img class="w-full h-full object-cover" data-alt="Misty green hills under a soft grey sky creating a sense of quiet solitude and morning dew" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdAPCDUxDT_rFF0UShcx-PFGGdnM1OLQYlmO9Tcf1ybhk_FxJ3r9x5NpHXmP1hU1Je1YwAlFva1uXxl0YzRJ_UJPlTMQUlqne7_WA2opxTf9lv3G2MG1kBFzcGz8k_ZK4yCLMnBvt9QRXVjScn-LepdLbbYBggBdm0htV1G1WOgeKyot3hf9kU26Ilr7nJES50jQc2VXqNIKlmW-mKOLR6uyfA51XrZzxUS-IviG9-B7Y4Ln0WRC5C3stZmi1xXfk7WrQ28dts3dLu"/>
+                    </div>
+                </div>
+            </section>
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-md">
+                <button class="flex items-center gap-sm text-error font-label-caps hover:bg-error-container/20 px-md py-3 rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-[18px]" data-icon="restart_alt">restart_alt</span>
+                    Reset to Defaults
+                </button>
+                <button class="bg-primary text-on-primary px-xl py-4 rounded-full font-headline-md shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+        <!-- Right Column: Live Preview -->
+        <div class="lg:col-span-5 lg:sticky lg:top-24">
+            <div class="bg-surface-container-lowest rounded-[32px] p-md shadow-[0_20px_40px_rgba(45,90,86,0.1)] border border-white">
+                <div class="flex items-center justify-between mb-md px-unit">
+                    <h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Live Preview</h4>
+                    <div class="flex gap-xs">
+                        <div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+                        <div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+                        <div class="w-2 h-2 rounded-full bg-primary-container"></div>
+                    </div>
+                </div>
+                <!-- Mock Phone UI -->
+                <div class="relative aspect-[9/16] w-full bg-black rounded-[24px] overflow-hidden shadow-2xl ring-8 ring-surface-container-highest">
+                    <!-- Shield Background -->
+                    <img class="absolute inset-0 w-full h-full object-cover opacity-60" data-alt="Ethereal sunlight streaming through lush forest canopy with soft light rays and golden particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDALSMnZZgVHskGWkbFxe4KN51UsfyplLT9eNjiLMCy1VO_NUVyzdyJ2m4nPE1M41jwQBgVpSQgUuG1Jbi-Oc_k2ZODOPKQY1YGclefsxmubvNmnAJvvrpmAUpwWIQM_OdWHemps8o20gzkYxRbAU1pwu3JC_9EZnl7A_ueFchrUHUejEwPCPQ9rIKOXEmqjVxsb9YXTwudMjeH27_3XtyKs3yUg0r_AW6sU46-TGtEuQR1LeseJHbRCywtMm2afNUA3oig0oxVL6-V"/>
+                    <div class="absolute inset-0 bg-gradient-to-b from-primary/40 via-transparent to-primary/80"></div>
+                    <!-- Shield Content -->
+                    <div class="relative h-full flex flex-col items-center justify-center px-lg text-center">
+                        <div class="w-20 h-20 rounded-full border-2 border-white/30 flex items-center justify-center mb-xl backdrop-blur-md">
+                            <span class="material-symbols-outlined text-white text-4xl" data-icon="shield" data-weight="fill" style="font-variation-settings: 'FILL' 1;">shield</span>
+                        </div>
+                        <h3 class="font-display text-[32px] text-white mb-md leading-tight">Peace of Mind</h3>
+                        <p class="font-body-md text-white/90 leading-relaxed max-w-[240px]">Your sanctuary is active. Take a deep breath and reconnect with the present moment.</p>
+                        <div class="absolute bottom-12 w-full px-xl">
+                            <div class="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                                <div class="w-2/3 h-full bg-white/80 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                            </div>
+                            <p class="text-white/60 text-[10px] uppercase tracking-tighter mt-sm font-label-caps">12 Minutes Remaining</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-on-surface-variant text-[11px] font-body-md mt-md">This is how your shield will appear on your device.</p>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-teal-50 dark:border-teal-900/20 shadow-[0_-4px_20px_rgba(45,90,86,0.1)] rounded-t-[32px]">
+    <a class="flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 hover:text-[#2D5A56] dark:hover:text-teal-300 transition-colors" href="#">
+        <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+        <span class="font-['Manrope'] text-[10px] font-medium tracking-wide uppercase mt-1">Home</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-[#2D5A56] dark:text-teal-400 font-bold" href="#">
+        <span class="material-symbols-outlined" data-icon="shield" data-weight="fill" style="font-variation-settings: 'FILL' 1;">shield</span>
+        <span class="font-['Manrope'] text-[10px] font-medium tracking-wide uppercase mt-1">Shield</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 hover:text-[#2D5A56] dark:hover:text-teal-300 transition-colors" href="#">
+        <span class="material-symbols-outlined" data-icon="timer">timer</span>
+        <span class="font-['Manrope'] text-[10px] font-medium tracking-wide uppercase mt-1">Limits</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 dark:text-gray-500 hover:text-[#2D5A56] dark:hover:text-teal-300 transition-colors" href="#">
+        <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+        <span class="font-['Manrope'] text-[10px] font-medium tracking-wide uppercase mt-1">Reports</span>
+    </a>
+</nav>
+</body></html>

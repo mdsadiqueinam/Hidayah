@@ -60,7 +60,7 @@ class AppTrackerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("AppTrackerService", "Service onStartCommand called")
-        
+
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification)
 
@@ -154,7 +154,7 @@ class AppTrackerService : Service() {
                 }
 
                 if (topPackage != null && topPackage != myPackageName && topPackage != "io.github.mdsadiqueinam.hidayah") {
-                    
+
                     // 1. Instant Shield on App Open
                     if (topPackage != currentPackageName) {
                         Log.i("AppTrackerService", "New app detected: $topPackage")
@@ -169,8 +169,8 @@ class AppTrackerService : Service() {
                             delay(500) // Breather
                             continue
                         }
-                    } 
-                    
+                    }
+
                     // 2. Session Limit Enforcement
                     else {
                         val app = controlledAppsCache[currentPackageName]
@@ -187,7 +187,7 @@ class AppTrackerService : Service() {
                     // but don't count session time either, or just ignore.
                 }
 
-                delay(300) 
+                delay(300)
             }
         }
     }

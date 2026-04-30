@@ -9,11 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ReportScreen() {
+fun ReportScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .then(modifier),
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Report Screen - Coming soon")

@@ -72,12 +72,14 @@ import io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme
 @Composable
 fun ShieldSettingsScreen(
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: ShieldSettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     ShieldSettingsScreenContent(
         onBack = onBack,
-        uiState = uiState
+        uiState = uiState,
+        modifier = modifier
     )
 }
 
@@ -85,7 +87,8 @@ fun ShieldSettingsScreen(
 @Composable
 fun ShieldSettingsScreenContent(
     onBack: () -> Unit,
-    uiState: ShieldSettingsUiState
+    uiState: ShieldSettingsUiState,
+    modifier: Modifier = Modifier
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -134,7 +137,8 @@ fun ShieldSettingsScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .then(modifier),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             item {
@@ -382,9 +386,9 @@ fun ShieldSettingsScreenContent(
                                 ),
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
-                            
+
                             Box(modifier = Modifier.fillMaxHeight().weight(1f))
-                            
+
                             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
                                 Box(
                                     modifier = Modifier
@@ -426,7 +430,7 @@ fun ShieldSettingsScreenContent(
 
 @Preview(showBackground = true)
 @Composable
-fun ShieldSettingsScreenPreview() {
+private fun ShieldSettingsScreenPreview() {
     HidayahTheme {
         ShieldSettingsScreenContent(
             onBack = {},
@@ -440,76 +444,3 @@ fun ShieldSettingsScreenPreview() {
     }
 }
 
-@Composable
-fun SectionCard(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    trailing: @Composable () -> Unit = {},
-    content: @Composable () -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(24.dp),
-        shadowElevation = 2.dp
-    ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-                trailing()
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            content()
-        }
-    }
-}
-
-@Composable
-fun InputField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    singleLine: Boolean = true,
-    minLines: Int = 1
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            label.uppercase(),
-            style = MaterialTheme.typography.labelSmall.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            ),
-            modifier = Modifier.padding(start = 4.dp)
-        )
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(placeholder) },
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
-            ),
-            singleLine = singleLine,
-            minLines = minLines
-        )
-    }
-}

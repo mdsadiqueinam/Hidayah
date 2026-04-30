@@ -60,18 +60,20 @@ import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 @Composable
 fun AppSettingsScreen(
     onBack: () -> Unit,
-    viewModel: AppSettingsViewModel = hiltViewModel()
+    modifier: Modifier = Modifier,
+    viewModel: AppSettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    AppSettingsScreenContent(uiState, onBack)
+    AppSettingsScreenContent(uiState, onBack, modifier = modifier)
 }
 
 @Composable
-fun AppSettingsTopAppBar(onBack: () -> Unit) {
+fun AppSettingsTopAppBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .then(modifier),
         color = MaterialTheme.colorScheme.background,
         shadowElevation = 0.dp
     ) {
@@ -103,11 +105,12 @@ fun AppSettingsTopAppBar(onBack: () -> Unit) {
 }
 
 @Composable
-fun AppIdentityHero(app: ControlledApp) {
+fun AppIdentityHero(app: ControlledApp, modifier: Modifier = Modifier) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(vertical = 16.dp)
+            .then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
@@ -121,16 +124,16 @@ fun AppIdentityHero(app: ControlledApp) {
                 AppIcon(packageName = app.packageName, modifier = Modifier.fillMaxSize())
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = app.appName,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         Text(
             text = "Managing your digital sanctuary",
             style = MaterialTheme.typography.bodyMedium,
@@ -144,10 +147,11 @@ fun RestrictionSettingsCard(
     dailyLimit: Int,
     sessionDuration: Int,
     onDailyLimitChange: (Int?) -> Unit,
-    onSessionDurationChange: (Int?) -> Unit
+    onSessionDurationChange: (Int?) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(modifier),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -202,9 +206,9 @@ fun RestrictionSettingsCard(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Slider(
                     value = if (dailyLimit == 0) 0f else dailyLimit.toFloat(),
                     onValueChange = { onDailyLimitChange(it.toInt()) },
@@ -216,7 +220,7 @@ fun RestrictionSettingsCard(
                         inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
                     )
                 )
-                
+
                 Text(
                     text = "Maximum usage allowed per 24 hours.",
                     style = MaterialTheme.typography.labelSmall,
@@ -256,9 +260,9 @@ fun RestrictionSettingsCard(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Slider(
                     value = if (sessionDuration == 0) 0f else sessionDuration.toFloat(),
                     onValueChange = { onSessionDurationChange(it.toInt()) },
@@ -270,7 +274,7 @@ fun RestrictionSettingsCard(
                         inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
                     )
                 )
-                
+
                 Text(
                     text = "Break reminder after continuous usage.",
                     style = MaterialTheme.typography.labelSmall,
@@ -282,9 +286,9 @@ fun RestrictionSettingsCard(
 }
 
 @Composable
-fun GentleInsightCard() {
+fun GentleInsightCard(modifier: Modifier = Modifier) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(modifier),
         shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
@@ -319,8 +323,8 @@ fun GentleInsightCard() {
 }
 
 @Composable
-fun ManagementSection(onRemove: () -> Unit) {
-    Column {
+fun ManagementSection(onRemove: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Button(
             onClick = onRemove,
             modifier = Modifier
@@ -347,9 +351,9 @@ fun ManagementSection(onRemove: () -> Unit) {
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = "This will stop Hidayah from tracking or limiting your usage immediately.",
             style = MaterialTheme.typography.labelSmall,
@@ -362,7 +366,7 @@ fun ManagementSection(onRemove: () -> Unit) {
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable
-fun AppSettingsScreenPreview() {
+private fun AppSettingsScreenPreview() {
     val mockApp = io.github.mdsadiqueinam.hidayah.data.ControlledApp(
         packageName = "com.instagram.android",
         appName = "Instagram",
@@ -372,7 +376,7 @@ fun AppSettingsScreenPreview() {
     val mockUiState = AppSettingsUiState(
         app = mockApp
     )
-    
+
     io.github.mdsadiqueinam.hidayah.ui.theme.HidayahTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             AppSettingsScreenContent(mockUiState, onBack = {})
@@ -383,7 +387,8 @@ fun AppSettingsScreenPreview() {
 @Composable
 fun AppSettingsScreenContent(
     uiState: AppSettingsUiState,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val app = uiState.app
 
@@ -400,7 +405,8 @@ fun AppSettingsScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 24.dp)
+                    .then(modifier),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 16.dp, bottom = 100.dp)
             ) {

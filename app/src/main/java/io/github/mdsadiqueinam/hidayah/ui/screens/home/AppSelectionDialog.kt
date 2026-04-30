@@ -39,6 +39,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 @Composable
 fun AppSelectionDialog(
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: AppSelectionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,6 +51,7 @@ fun AppSelectionDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.85f)
+                .then(modifier)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp)
@@ -119,7 +121,8 @@ fun AppRow(
     packageName: String,
     usage: String,
     isSelected: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val packageManager = context.packageManager
@@ -136,7 +139,8 @@ fun AppRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onToggle)
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .padding(vertical = 10.dp, horizontal = 4.dp)
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (icon != null) {
