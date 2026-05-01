@@ -15,14 +15,18 @@ import javax.inject.Inject
 
 data class ReportUiState(
     val interventionsCount: Int = 0,
-    val reclaimedTime: String = "0 hours",
-    val efficiencyChange: String = "0%",
-    val dailyAverage: String = "0h 0m",
-    val dailyAverageProgress: Float = 0f,
+    val reclaimedHours: Float = 0f,
+    val efficiency: Int = 0,
+    val dailyAverageMs: Long = 0L,
     val weeklyTrend: List<Long> = emptyList(),
     val categoryBreakdown: Map<String, Float> = emptyMap(),
     val isLoading: Boolean = true
-)
+) {
+    val reclaimedTime: String get() = String.format("%.1f hours", reclaimedHours)
+    val efficiencyChange: String get() = if (efficiency >= 0) "$efficiency% less" else "${-efficiency}% more"
+    val dailyAverage: String get() = TimeUtils.formatDuration(dailyAverageMs)
+    val dailyAverageProgress: Float get() = (dailyAverageMs.toFloat() / (4 * 3600000f)).coerceIn(0f, 1f)
+}
 
 @HiltViewModel
 class ReportViewModel @Inject constructor(
@@ -53,13 +57,9 @@ class ReportViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     interventionsCount = interventions,
-                    reclaimedTime = String.format("%.1f hours", reclaimedHours),
-                    efficiencyChange = if (efficiency >= 0) "$efficiency% less" else "${-efficiency}% more",
-                    dailyAverage = TimeUtils.formatDuration(dailyAvg),
-                    dailyAverageProgress = (dailyAvg.toFloat() / (4 * 3600000f)).coerceIn(
-                        0f,
-                        1f
-                    ), // Max 4h
+                    reclaimedHours = reclaimedHours,
+                    efficiency = efficiency,
+                    dailyAverageMs = dailyAvg,
                     weeklyTrend = weeklyStats,
                     categoryBreakdown = categoryStats,
                     isLoading = false

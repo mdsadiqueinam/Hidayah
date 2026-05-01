@@ -41,8 +41,7 @@ class AppRepository @Inject constructor(
                 AppItem(
                     packageName = packageName,
                     appName = resolveInfo.loadLabel(packageManager).toString(),
-                    usageTime = usageTime,
-                    formattedUsage = TimeUtils.formatDuration(usageTime)
+                    usageTime = usageTime
                 )
             }
             .distinctBy { it.packageName }

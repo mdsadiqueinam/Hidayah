@@ -22,9 +22,11 @@ import javax.inject.Inject
 data class ShieldUiState(
     val controlledApp: ControlledApp? = null,
     val shieldConfig: ShieldConfig = ShieldConfig(),
-    val usageTime: String = "0m",
+    val usageTimeMs: Long = 0L,
     val attempts: Int = 0
-)
+) {
+    val usageTime: String get() = TimeUtils.formatDuration(usageTimeMs)
+}
 
 @HiltViewModel
 class ShieldViewModel @Inject constructor(
@@ -60,7 +62,7 @@ class ShieldViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     controlledApp = app,
-                    usageTime = TimeUtils.formatDuration(usageMs)
+                    usageTimeMs = usageMs
                 )
             }
         }
