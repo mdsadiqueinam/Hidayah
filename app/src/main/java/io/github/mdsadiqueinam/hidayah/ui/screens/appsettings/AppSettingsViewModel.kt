@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.mdsadiqueinam.hidayah.data.AppRepository
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +25,7 @@ data class AppSettingsUiState(
 @HiltViewModel
 class AppSettingsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val repository: AppRepository
+    private val dbRepository: AppDatabaseRepository
 ) : ViewModel() {
     val packageName: String = checkNotNull(savedStateHandle["packageName"])
 
@@ -38,7 +38,7 @@ class AppSettingsViewModel @Inject constructor(
 
     private fun loadAppData() {
         viewModelScope.launch {
-            val app = repository.getControlledApp(packageName)
+            val app = dbRepository.getControlledApp(packageName)
             _uiState.update { state ->
                 state.copy(
                     app = app,
@@ -66,7 +66,7 @@ class AppSettingsViewModel @Inject constructor(
 
     private fun removeApp() {
         viewModelScope.launch {
-            repository.removeControlledApp(packageName)
+            dbRepository.removeControlledApp(packageName)
         }
     }
 
@@ -75,7 +75,7 @@ class AppSettingsViewModel @Inject constructor(
         val updatedApp = update(currentApp)
         _uiState.update { it.copy(app = updatedApp) }
         viewModelScope.launch {
-            repository.updateControlledApp(updatedApp)
+            dbRepository.updateControlledApp(updatedApp)
         }
     }
 }

@@ -266,7 +266,11 @@ private fun ShieldBackgroundSelectorCard(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    ShieldImageSelectorCardContent(uiState, imagePickerLauncher, defaultShieldImages)
+                    ShieldImageSelectorCardContent(
+                        uiState,
+                        imagePickerLauncher,
+                        defaultShieldImages
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -309,7 +313,11 @@ private fun ShieldImageSelectorCardContent(
                 shape = CircleShape,
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Upload,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Upload", style = MaterialTheme.typography.labelLarge)
             }

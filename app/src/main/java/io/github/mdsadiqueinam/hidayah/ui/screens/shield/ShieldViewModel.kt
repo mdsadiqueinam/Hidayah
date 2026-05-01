@@ -4,17 +4,17 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -28,6 +28,7 @@ data class ShieldUiState(
 @HiltViewModel
 class ShieldViewModel @Inject constructor(
     private val repository: AppRepository,
+    private val dbRepository: AppDatabaseRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -42,7 +43,7 @@ class ShieldViewModel @Inject constructor(
 
     private fun loadData() {
         // Observe Shield Config
-        repository.getShieldConfig()
+        dbRepository.getShieldConfig()
             .onEach { config ->
                 if (config != null) {
                     _uiState.update { it.copy(shieldConfig = config) }
@@ -51,10 +52,9 @@ class ShieldViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         // Fetch Controlled App and Usage
-        combine(
-            flow { emit(repository.getControlledApp(packageName)) },
-            flow { emit(repository.getDailyUsageStats()) }
-        ) { app, stats ->
+        viewModelScope.launch {
+            val app = dbRepository.getControlledApp(packageName)
+            val stats = repository.getDailyUsageStats()
             val usageMs = stats[packageName]?.totalTimeInForeground ?: 0L
             _uiState.update {
                 it.copy(
@@ -62,7 +62,7 @@ class ShieldViewModel @Inject constructor(
                     usageTime = formatDuration(usageMs)
                 )
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     private fun formatDuration(millis: Long): String {

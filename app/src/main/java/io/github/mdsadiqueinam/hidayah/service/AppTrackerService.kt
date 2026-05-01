@@ -8,6 +8,7 @@ import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
@@ -26,6 +27,9 @@ class AppTrackerService : Service() {
 
     @Inject
     lateinit var repository: AppRepository
+
+    @Inject
+    lateinit var dbRepository: AppDatabaseRepository
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var trackingJob: Job? = null
@@ -80,14 +84,14 @@ class AppTrackerService : Service() {
             val myPackageName = packageName
 
             launch {
-                repository.getShieldConfig().collect {
+                dbRepository.getShieldConfig().collect {
                     Log.i("AppTrackerService", "Config updated: $it")
                     configCache = it ?: ShieldConfig()
                 }
             }
 
             launch {
-                repository.getControlledApps().collect {
+                dbRepository.getControlledApps().collect {
                     Log.i("AppTrackerService", "Controlled apps updated: ${it.size} apps")
                     controlledAppsCache = it.associateBy { app -> app.packageName }
                 }

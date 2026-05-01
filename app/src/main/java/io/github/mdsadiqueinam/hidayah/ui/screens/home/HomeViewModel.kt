@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
@@ -63,6 +64,7 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: AppRepository,
+    private val dbRepository: AppDatabaseRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -98,7 +100,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun observeShieldConfig() {
-        repository.getShieldConfig()
+        dbRepository.getShieldConfig()
             .onEach { config ->
                 if (config != null) {
                     shieldConfig = config
@@ -147,7 +149,7 @@ class HomeViewModel @Inject constructor(
 
     private fun saveShieldConfig(config: ShieldConfig) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateShieldConfig(config)
+            dbRepository.updateShieldConfig(config)
         }
     }
 
@@ -182,7 +184,7 @@ class HomeViewModel @Inject constructor(
 
     private fun observeControlledApps() {
         viewModelScope.launch {
-            repository.getControlledApps().collect { apps ->
+            dbRepository.getControlledApps().collect { apps ->
                 rawControlledApps = apps
                 refreshUsageStats()
             }
