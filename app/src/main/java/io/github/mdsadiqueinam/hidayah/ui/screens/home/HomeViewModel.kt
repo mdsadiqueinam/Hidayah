@@ -24,8 +24,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-private const val DEFAULT_SCREEN_TIME_LIMIT_HOURS = 5L
-
 data class TopApp(
     val name: String,
     val usage: String,
@@ -45,7 +43,7 @@ data class HomeUiState(
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
-    val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(DEFAULT_SCREEN_TIME_LIMIT_HOURS),
+    val screenTimeLimitMs: Long = 0,
     val totalScreenTimeMs: Long = 0,
     val controlledScreenTimeMs: Long = 0,
     val screenTimePercentage: String = "0% of the day",
@@ -108,7 +106,8 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isProtectionActive = config.isProtectionActive,
-                            selectedPauseDuration = config.selectedPauseDuration
+                            selectedPauseDuration = config.selectedPauseDuration,
+                            screenTimeLimitMs = config.screenTimeLimit
                         )
                     }
                 }

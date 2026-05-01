@@ -38,6 +38,8 @@ class AppTrackerService : Service() {
     private var sessionStartTime: Long = 0L
     private var lastShieldTriggeredPackage: String? = null
 
+    private var totalDailyUsageMs: Long = 0L
+
     private var configCache: ShieldConfig? = null
     private var controlledAppsCache: Map<String, ControlledApp> = emptyMap()
 
@@ -97,6 +99,14 @@ class AppTrackerService : Service() {
                 }
             }
 
+            launch {
+                while (isActive) {
+                    val stats = repository.getDailyUsageStats()
+                    totalDailyUsageMs = stats.values.sumOf { it.totalTimeInForeground }
+                    delay(CHECK_INTERVAL_MS)
+                }
+            }
+
             while (isActive) {
                 processTrackingIteration(usageStatsManager, myPackageName)
             }
@@ -120,9 +130,19 @@ class AppTrackerService : Service() {
             resetSession()
             delay(CHECK_INTERVAL_MS)
             return
-        }
+            }
 
-        val topPackage = AppTrackerHelper.pollTopPackage(usageStatsManager, now)
+            val topPackage = AppTrackerHelper.pollTopPackage(usageStatsManager, now)
+
+            // Global screen time limit check
+            if (config != null && totalDailyUsageMs >= config.screenTimeLimit &&
+            topPackage != myPackageName && topPackage != "io.github.mdsadiqueinam.hidayah"
+            ) {
+            Log.i("AppTrackerService", "Global screen time limit reached: $totalDailyUsageMs")
+            triggerShield("GLOBAL_LIMIT")
+            delay(POLL_INTERVAL_MS)
+            return
+        }
 
         if (topPackage != null && topPackage != myPackageName &&
             topPackage != "io.github.mdsadiqueinam.hidayah"
