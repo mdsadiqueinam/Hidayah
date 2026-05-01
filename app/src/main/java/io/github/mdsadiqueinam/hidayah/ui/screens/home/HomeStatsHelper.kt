@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.util.Log
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.concurrent.TimeUnit
 
 object HomeStatsHelper {
@@ -51,7 +52,7 @@ object HomeStatsHelper {
                 val appCategory = getApplicationCategory(context, usageStats.packageName)
                 TopApp(
                     name = appName,
-                    usage = formatDuration(usageStats.totalTimeInForeground),
+                    usage = TimeUtils.formatDuration(usageStats.totalTimeInForeground),
                     category = appCategory,
                     packageName = usageStats.packageName
                 )
@@ -65,23 +66,13 @@ object HomeStatsHelper {
         return rawControlledApps.map { app ->
             ControlledAppWithUsage(
                 app = app,
-                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
+                usage = TimeUtils.formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
                 limit = if (app.dailyLimit > 0) {
-                    formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
+                    TimeUtils.formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
                 } else {
                     "No limit"
                 }
             )
-        }
-    }
-
-    fun formatDuration(millis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(millis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        return if (hours > 0) {
-            "${hours}h ${minutes}m"
-        } else {
-            "${minutes}m"
         }
     }
 

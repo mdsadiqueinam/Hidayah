@@ -4,6 +4,7 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -14,7 +15,6 @@ class AppRepository @Inject constructor(
     private val context: Context
 ) {
     companion object {
-        private const val MINUTES_PER_HOUR = 60
         private const val LAST_DAY_INDEX = 6
 
         private const val DEFAULT_SOCIAL_PROPORTION = 0.4f
@@ -46,17 +46,11 @@ class AppRepository @Inject constructor(
                     packageName = packageName,
                     appName = resolveInfo.loadLabel(packageManager).toString(),
                     usageTime = usageTime,
-                    formattedUsage = formatDuration(usageTime)
+                    formattedUsage = TimeUtils.formatDuration(usageTime)
                 )
             }
             .distinctBy { it.packageName }
             .sortedByDescending { it.usageTime }
-    }
-
-    private fun formatDuration(millis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(millis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % MINUTES_PER_HOUR
-        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
 
     fun getWeeklyUsageStats(): List<Long> {

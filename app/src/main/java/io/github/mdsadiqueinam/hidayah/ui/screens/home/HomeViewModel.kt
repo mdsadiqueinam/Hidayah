@@ -11,6 +11,7 @@ import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -214,8 +215,8 @@ class HomeViewModel @Inject constructor(
         // Update UI state
         _uiState.update { state ->
             state.copy(
-                totalScreenTime = HomeStatsHelper.formatDuration(totalTimeMs),
-                controlledScreenTime = HomeStatsHelper.formatDuration(controlledTimeMs),
+                totalScreenTime = TimeUtils.formatDuration(totalTimeMs),
+                controlledScreenTime = TimeUtils.formatDuration(controlledTimeMs),
                 totalScreenTimeMs = totalTimeMs,
                 controlledScreenTimeMs = controlledTimeMs,
                 screenTimeStatus = status,

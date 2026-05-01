@@ -8,6 +8,7 @@ import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,15 +60,9 @@ class ShieldViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     controlledApp = app,
-                    usageTime = formatDuration(usageMs)
+                    usageTime = TimeUtils.formatDuration(usageMs)
                 )
             }
         }
-    }
-
-    private fun formatDuration(millis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(millis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
 }

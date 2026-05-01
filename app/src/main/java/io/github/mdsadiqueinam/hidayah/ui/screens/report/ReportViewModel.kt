@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,16 +48,14 @@ class ReportViewModel @Inject constructor(
 
             val dailyAvg = if (weeklyStats.isNotEmpty()) weeklyStats.average().toLong() else 0L
             val lastWeekAvg = 2.5 * 3600000 // Mock last week average
-            val efficiency = if (lastWeekAvg > 0) {
-                ((lastWeekAvg - dailyAvg) / lastWeekAvg * 100).toInt()
-            } else 0
+            val efficiency = ((lastWeekAvg - dailyAvg) / lastWeekAvg * 100).toInt()
 
             _uiState.update {
                 it.copy(
                     interventionsCount = interventions,
                     reclaimedTime = String.format("%.1f hours", reclaimedHours),
                     efficiencyChange = if (efficiency >= 0) "$efficiency% less" else "${-efficiency}% more",
-                    dailyAverage = formatDuration(dailyAvg),
+                    dailyAverage = TimeUtils.formatDuration(dailyAvg),
                     dailyAverageProgress = (dailyAvg.toFloat() / (4 * 3600000f)).coerceIn(
                         0f,
                         1f
@@ -67,11 +66,5 @@ class ReportViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private fun formatDuration(millis: Long): String {
-        val hours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(millis)
-        val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
 }
