@@ -23,7 +23,10 @@ data class ShieldUiState(
     val controlledApp: ControlledApp? = null,
     val shieldConfig: ShieldConfig = ShieldConfig(),
     val usageTimeMs: Long = 0L,
-    val attempts: Int = 0
+    val attempts: Int = 0,
+    val countdownSeconds: Int = 60,
+    val isCountdownActive: Boolean = false,
+    val isCountdownFinished: Boolean = false
 ) {
     val usageTime: String get() = DateTimeUtils.formatDuration(usageTimeMs)
 }
@@ -54,16 +57,41 @@ class ShieldViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        // Fetch Controlled App and Usage
+        // Observe Controlled App
+        dbRepository.getControlledAppFlow(packageName)
+            .onEach { app ->
+                _uiState.update { it.copy(controlledApp = app, attempts = app?.attempts ?: 0) }
+            }
+            .launchIn(viewModelScope)
+
+        // Fetch Usage
         viewModelScope.launch {
-            val app = dbRepository.getControlledApp(packageName)
             val stats = repository.getDailyUsageStats()
             val usageMs = stats[packageName]?.totalTimeInForeground ?: 0L
             _uiState.update {
-                it.copy(
-                    controlledApp = app,
-                    usageTimeMs = usageMs
-                )
+                it.copy(usageTimeMs = usageMs)
+            }
+        }
+    }
+
+    fun startCountdown() {
+        _uiState.update { it.copy(isCountdownActive = true) }
+    }
+
+    fun tickCountdown() {
+        _uiState.update {
+            if (it.countdownSeconds > 1) {
+                it.copy(countdownSeconds = it.countdownSeconds - 1)
+            } else {
+                it.copy(countdownSeconds = 0, isCountdownActive = false, isCountdownFinished = true)
+            }
+        }
+    }
+
+    fun incrementAttempts() {
+        viewModelScope.launch {
+            uiState.value.controlledApp?.let { app ->
+                dbRepository.updateControlledApp(app.copy(attempts = app.attempts + 1))
             }
         }
     }

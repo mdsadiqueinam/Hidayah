@@ -56,7 +56,6 @@ import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
 
 private const val BACKGROUND_IMAGE_ALPHA = 0.6f
 private const val BACKGROUND_OVERLAY_ALPHA = 0.4f
-private const val PROGRESS_BAR_WIDTH_MOCK = 0.3f
 
 @Composable
 fun ShieldScreen(
@@ -68,6 +67,15 @@ fun ShieldScreen(
     val uiState by viewModel.uiState.collectAsState()
     val shieldImage = rememberShieldImage(uiState.shieldConfig.imagePath)
     val context = LocalContext.current
+
+    LaunchedEffect(uiState.isCountdownActive) {
+        if (uiState.isCountdownActive) {
+            while (uiState.countdownSeconds > 0) {
+                kotlinx.coroutines.delay(1000)
+                viewModel.tickCountdown()
+            }
+        }
+    }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -111,7 +119,15 @@ fun ShieldScreen(
             ShieldBackgroundImage(shieldImage)
         }
         ShieldGradientOverlay()
-        ShieldContentColumn(uiState, onClose, onOpen)
+        ShieldContentColumn(
+            uiState = uiState,
+            onClose = onClose,
+            onOpenFirstClick = { viewModel.startCountdown() },
+            onOpenSecondClick = {
+                viewModel.incrementAttempts()
+                onOpen()
+            }
+        )
     }
 }
 
@@ -192,7 +208,8 @@ private fun ShieldGradientOverlay(modifier: Modifier = Modifier) {
 private fun ShieldContentColumn(
     uiState: ShieldUiState,
     onClose: () -> Unit,
-    onOpen: () -> Unit,
+    onOpenFirstClick: () -> Unit,
+    onOpenSecondClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -209,9 +226,9 @@ private fun ShieldContentColumn(
         Spacer(modifier = Modifier.height(48.dp))
         ShieldUsageStats(uiState)
         Spacer(modifier = Modifier.weight(1f))
-        ShieldActionButtons(onClose, onOpen)
+        ShieldActionButtons(uiState, onClose, onOpenFirstClick, onOpenSecondClick)
         Spacer(modifier = Modifier.height(16.dp))
-        ShieldProgressIndicator()
+        ShieldProgressIndicator(uiState)
     }
 }
 
@@ -273,10 +290,21 @@ private fun ShieldUsageStats(
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.1f))
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White.copy(alpha = 0.8f)
+        )
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .background(Color.White.copy(alpha = 0.3f), CircleShape)
+        )
+        Text(
+            text = "Attempts: ${uiState.attempts}",
             style = MaterialTheme.typography.labelLarge,
             color = Color.White.copy(alpha = 0.8f)
         )
@@ -285,8 +313,10 @@ private fun ShieldUsageStats(
 
 @Composable
 private fun ShieldActionButtons(
+    uiState: ShieldUiState,
     onClose: () -> Unit,
-    onOpen: () -> Unit,
+    onOpenFirstClick: () -> Unit,
+    onOpenSecondClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -310,17 +340,34 @@ private fun ShieldActionButtons(
             )
         }
 
+        val buttonText = when {
+            uiState.isCountdownActive -> "Wait (${uiState.countdownSeconds}s)"
+            uiState.isCountdownFinished -> "Open Application"
+            else -> "Open (tap, breathe 60s, tap again)"
+        }
+        val isEnabled = !uiState.isCountdownActive
+
         OutlinedButton(
-            onClick = onOpen,
+            onClick = {
+                if (uiState.isCountdownFinished) {
+                    onOpenSecondClick()
+                } else {
+                    onOpenFirstClick()
+                }
+            },
+            enabled = isEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
             shape = RoundedCornerShape(20.dp),
             border = androidx.compose.foundation.BorderStroke(2.dp, Color.White.copy(alpha = 0.5f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White,
+                disabledContentColor = Color.White.copy(alpha = 0.5f)
+            )
         ) {
             Text(
-                "Continue Anyway",
+                buttonText,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -328,7 +375,16 @@ private fun ShieldActionButtons(
 }
 
 @Composable
-private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
+private fun ShieldProgressIndicator(
+    uiState: ShieldUiState,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (uiState.isCountdownActive || uiState.isCountdownFinished) {
+        (60 - uiState.countdownSeconds) / 60f
+    } else {
+        0f
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -343,14 +399,14 @@ private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(PROGRESS_BAR_WIDTH_MOCK)
+                    .fillMaxWidth(progress)
                     .fillMaxHeight()
                     .background(Color.White.copy(alpha = 0.8f))
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "PROTECTION ACTIVE",
+            if (uiState.isCountdownActive) "BREATHING IN PROGRESS..." else "PROTECTION ACTIVE",
             style = MaterialTheme.typography.labelSmall.copy(
                 color = Color.White.copy(alpha = 0.6f),
                 letterSpacing = 1.sp,

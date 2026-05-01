@@ -14,6 +14,9 @@ class AppDatabaseRepository @Inject constructor(
     suspend fun getControlledApp(packageName: String): ControlledApp? =
         controlledAppDao.getControlledApp(packageName)
 
+    fun getControlledAppFlow(packageName: String): Flow<ControlledApp?> =
+        controlledAppDao.getControlledAppFlow(packageName)
+
     suspend fun saveControlledApps(apps: List<ControlledApp>) {
         controlledAppDao.deleteAll()
         controlledAppDao.insertAll(apps)

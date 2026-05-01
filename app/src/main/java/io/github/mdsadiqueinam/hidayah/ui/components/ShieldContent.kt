@@ -271,7 +271,7 @@ private fun ShieldActionButtons(
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Close", fontWeight = FontWeight.Bold)
+            Text("Close Application", fontWeight = FontWeight.Bold)
         }
         OutlinedButton(
             onClick = onOpenClick,
@@ -282,7 +282,7 @@ private fun ShieldActionButtons(
             border = androidx.compose.foundation.BorderStroke(1.dp, accentColor),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = accentColor)
         ) {
-            Text("Open", fontWeight = FontWeight.Bold)
+            Text("Open (tap, breathe 60s, tap again)", fontWeight = FontWeight.Bold)
         }
     }
 }
