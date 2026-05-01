@@ -208,7 +208,6 @@ fun ShieldActionButtons(
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             shape = CircleShape,
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save Changes", style = MaterialTheme.typography.titleMedium)

@@ -202,6 +202,7 @@ private fun ShieldContentColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         ShieldIconSection()
         Spacer(modifier = Modifier.height(40.dp))
         ShieldTextSection(uiState)

@@ -160,6 +160,7 @@ fun ShieldPreviewContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Box(modifier = Modifier.weight(1f))
         ShieldPreviewIcon()
         Spacer(modifier = Modifier.height(32.dp))
         ShieldPreviewText(uiState)
