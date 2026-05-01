@@ -43,6 +43,7 @@ data class HomeUiState(
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
+    val pausedUntilMs: Long = 0,
     val screenTimeLimitMs: Long = 0,
     val totalScreenTimeMs: Long = 0,
     val controlledScreenTimeMs: Long = 0,
@@ -108,6 +109,7 @@ class HomeViewModel @Inject constructor(
                     it.copy(
                         isProtectionActive = shieldConfig.isProtectionActive,
                         selectedPauseDuration = shieldConfig.selectedPauseDuration,
+                        pausedUntilMs = shieldConfig.pausedUntil,
                         screenTimeLimitMs = shieldConfig.screenTimeLimit
                     )
                 }

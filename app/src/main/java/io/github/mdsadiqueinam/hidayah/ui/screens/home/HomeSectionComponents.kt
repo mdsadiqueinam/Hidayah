@@ -33,7 +33,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -256,7 +262,8 @@ fun ProtectionSection(uiState: HomeUiState, modifier: Modifier = Modifier) {
             isActive = uiState.isProtectionActive,
             onProtectionToggle = uiState.onProtectionToggle,
             selectedPauseDuration = uiState.selectedPauseDuration,
-            onPauseDurationChange = uiState.onPauseDurationChange
+            onPauseDurationChange = uiState.onPauseDurationChange,
+            pausedUntilMs = uiState.pausedUntilMs
         )
     }
 }
@@ -297,8 +304,29 @@ private fun ProtectionCard(
     onProtectionToggle: (Boolean) -> Unit,
     selectedPauseDuration: String?,
     onPauseDurationChange: (String?) -> Unit,
+    pausedUntilMs: Long,
     modifier: Modifier = Modifier
 ) {
+    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    
+    LaunchedEffect(pausedUntilMs) {
+        while (pausedUntilMs > System.currentTimeMillis()) {
+            currentTime = System.currentTimeMillis()
+            delay(1000)
+        }
+    }
+
+    val remainingTime = remember(pausedUntilMs, currentTime) {
+        if (pausedUntilMs > currentTime) {
+            val diff = pausedUntilMs - currentTime
+            val h = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(diff)
+            val m = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+            val s = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+            if (h > 0) String.format("%02d:%02d:%02d", h, m, s)
+            else String.format("%02d:%02d", m, s)
+        } else null
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -312,13 +340,25 @@ private fun ProtectionCard(
                 onProtectionToggle = onProtectionToggle
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "PAUSE PROTECTION",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = Color.White.copy(alpha = 0.6f),
-                letterSpacing = 1.5.sp
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "PAUSE PROTECTION",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.6f),
+                    letterSpacing = 1.5.sp
+                )
+                if (remainingTime != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "• $remainingTime REMAINING",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primaryFixed.copy(alpha = 0.9f),
+                        letterSpacing = 1.5.sp
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
             PauseOptionsRow(
                 options = listOf("5m", "15m", "1h"),
