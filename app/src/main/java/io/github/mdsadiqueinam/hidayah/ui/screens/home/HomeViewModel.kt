@@ -45,9 +45,6 @@ data class HomeUiState(
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
-    val totalScreenTime: String = "0h 0m",
-    val controlledScreenTime: String = "0h 0m",
-    val screenTimeLimit: String = "5h 0m",
     val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(DEFAULT_SCREEN_TIME_LIMIT_HOURS),
     val totalScreenTimeMs: Long = 0,
     val controlledScreenTimeMs: Long = 0,
@@ -59,7 +56,11 @@ data class HomeUiState(
     val onProtectionToggle: (Boolean) -> Unit = {},
     val onFocusModeToggle: (Boolean) -> Unit = {},
     val onPauseDurationChange: (String?) -> Unit = {}
-)
+) {
+    val totalScreenTime: String get() = TimeUtils.formatDuration(totalScreenTimeMs)
+    val controlledScreenTime: String get() = TimeUtils.formatDuration(controlledScreenTimeMs)
+    val screenTimeLimit: String get() = TimeUtils.formatDuration(screenTimeLimitMs)
+}
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -208,8 +209,6 @@ class HomeViewModel @Inject constructor(
         // Update UI state
         _uiState.update { state ->
             state.copy(
-                totalScreenTime = TimeUtils.formatDuration(totalTimeMs),
-                controlledScreenTime = TimeUtils.formatDuration(controlledTimeMs),
                 totalScreenTimeMs = totalTimeMs,
                 controlledScreenTimeMs = controlledTimeMs,
                 screenTimeStatus = status,
