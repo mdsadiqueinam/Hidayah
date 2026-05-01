@@ -4,6 +4,7 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -23,11 +24,6 @@ class AppRepository @Inject constructor(
 
         private const val MOCK_INTERVENTION_MIN = 10
         private const val MOCK_INTERVENTION_MAX = 50
-
-        private const val END_HOUR = 23
-        private const val END_MINUTE = 59
-        private const val END_SECOND = 59
-        private const val END_MILLIS = 999
     }
 
     fun getInstalledApps(): List<AppItem> {
@@ -62,10 +58,10 @@ class AppRepository @Inject constructor(
         for (i in LAST_DAY_INDEX downTo 0) {
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.DAY_OF_YEAR, -i)
-            setCalendarToStartOfDay(calendar)
+            DateTimeUtils.setStartOfDay(calendar)
             val startTime = calendar.timeInMillis
 
-            setCalendarToEndOfDay(calendar)
+            DateTimeUtils.setEndOfDay(calendar)
             val endTime = calendar.timeInMillis
 
             val dailyStats = usageStatsManager.queryUsageStats(
@@ -77,20 +73,6 @@ class AppRepository @Inject constructor(
             stats.add(totalTime)
         }
         return stats
-    }
-
-    private fun setCalendarToStartOfDay(calendar: Calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-    }
-
-    private fun setCalendarToEndOfDay(calendar: Calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, END_HOUR)
-        calendar.set(Calendar.MINUTE, END_MINUTE)
-        calendar.set(Calendar.SECOND, END_SECOND)
-        calendar.set(Calendar.MILLISECOND, END_MILLIS)
     }
 
     fun getCategoryUsageStats(): Map<String, Float> {
@@ -135,7 +117,7 @@ class AppRepository @Inject constructor(
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
-        setCalendarToStartOfDay(calendar)
+        DateTimeUtils.setStartOfDay(calendar)
         val startTime = calendar.timeInMillis
         val endTime = System.currentTimeMillis()
 

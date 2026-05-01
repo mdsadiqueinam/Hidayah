@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import java.util.Calendar
 
 private const val DONUT_STOKE_WIDTH = 40f
@@ -47,17 +48,7 @@ fun WeeklyBarChart(
     val days = (6 downTo 0).map { i ->
         calendar.timeInMillis = System.currentTimeMillis()
         calendar.add(Calendar.DAY_OF_YEAR, -i)
-
-        when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> "MON"
-            Calendar.TUESDAY -> "TUE"
-            Calendar.WEDNESDAY -> "WED"
-            Calendar.THURSDAY -> "THU"
-            Calendar.FRIDAY -> "FRI"
-            Calendar.SATURDAY -> "SAT"
-            Calendar.SUNDAY -> "SUN"
-            else -> ""
-        }
+        DateTimeUtils.getShortWeekdayName(calendar)
     }
 
     val maxUsage = data.maxOrNull()?.coerceAtLeast(1L) ?: 1L
@@ -137,11 +128,7 @@ fun CategoryDonut(proportions: List<Float>, modifier: Modifier = Modifier) {
     ) {
         DonutChart(
             proportions = proportions,
-            colors = listOf(
-                MaterialTheme.colorScheme.primary,
-                MaterialTheme.colorScheme.secondary,
-                MaterialTheme.colorScheme.tertiaryFixedDim
-            )
+            colors = ReportUiUtils.getCategoryColors()
         )
         Text(
             "100%",

@@ -123,7 +123,7 @@ class HomeViewModel @Inject constructor(
 
     private fun updatePauseDuration(duration: String?) {
         val pausedUntil = if (duration != null) {
-            System.currentTimeMillis() + parsePauseDuration(duration)
+            System.currentTimeMillis() + TimeUtils.parsePauseDuration(duration)
         } else {
             0L
         }
@@ -132,20 +132,6 @@ class HomeViewModel @Inject constructor(
             pausedUntil = pausedUntil
         )
         saveShieldConfig(newConfig)
-    }
-
-    private fun parsePauseDuration(duration: String): Long {
-        return try {
-            val value = duration.dropLast(1).toLong()
-            val unit = duration.last()
-            when (unit) {
-                'm' -> TimeUnit.MINUTES.toMillis(value)
-                'h' -> TimeUnit.HOURS.toMillis(value)
-                else -> 0L
-            }
-        } catch (e: Exception) {
-            0L
-        }
     }
 
     private fun saveShieldConfig(config: ShieldConfig) {

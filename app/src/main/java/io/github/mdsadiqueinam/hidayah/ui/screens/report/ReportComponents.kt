@@ -264,13 +264,10 @@ private fun CategoryLegend(breakdown: Map<String, Float>, modifier: Modifier = M
             CategoryLegendItem(
                 label = entry.key,
                 percentage = (entry.value * FULL_PERCENTAGE).toInt(),
-                color = when (index) {
-                    0 -> MaterialTheme.colorScheme.primary
-                    1 -> MaterialTheme.colorScheme.secondary
-                    else -> MaterialTheme.colorScheme.tertiaryFixedDim
-                }
+                color = ReportUiUtils.getCategoryColor(index)
             )
         }
+
     }
 }
 

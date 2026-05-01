@@ -13,4 +13,21 @@ object TimeUtils {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % MINUTES_PER_HOUR
         return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
     }
+
+    /**
+     * Parses a pause duration string like "10m" or "2h" into milliseconds.
+     */
+    fun parsePauseDuration(duration: String): Long {
+        return try {
+            val value = duration.dropLast(1).toLong()
+            val unit = duration.last()
+            when (unit) {
+                'm' -> TimeUnit.MINUTES.toMillis(value)
+                'h' -> TimeUnit.HOURS.toMillis(value)
+                else -> 0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
+    }
 }

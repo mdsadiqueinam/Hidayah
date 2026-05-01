@@ -123,12 +123,12 @@ private fun HomeScreenContent(
 @Composable
 private fun HomeScreenPreview() {
     val mockUiState = HomeUiState(
-        totalScreenTime = "3h 15m",
-        controlledScreenTime = "1h 20m",
         totalScreenTimeMs =
             java.util.concurrent.TimeUnit.HOURS.toMillis(3) +
                     java.util.concurrent.TimeUnit.MINUTES.toMillis(15),
-        screenTimeLimit = "5h 0m",
+        controlledScreenTimeMs =
+            java.util.concurrent.TimeUnit.HOURS.toMillis(1) +
+                    java.util.concurrent.TimeUnit.MINUTES.toMillis(20),
         screenTimeLimitMs = java.util.concurrent.TimeUnit.HOURS.toMillis(5),
         screenTimeStatus = "Excellent",
         isProtectionActive = true,
