@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,7 @@ data class ReportUiState(
 ) {
     val reclaimedTime: String get() = String.format("%.1f hours", reclaimedHours)
     val efficiencyChange: String get() = if (efficiency >= 0) "$efficiency% less" else "${-efficiency}% more"
-    val dailyAverage: String get() = TimeUtils.formatDuration(dailyAverageMs)
+    val dailyAverage: String get() = DateTimeUtils.formatDuration(dailyAverageMs)
     val dailyAverageProgress: Float get() = (dailyAverageMs.toFloat() / (4 * 3600000f)).coerceIn(0f, 1f)
 }
 

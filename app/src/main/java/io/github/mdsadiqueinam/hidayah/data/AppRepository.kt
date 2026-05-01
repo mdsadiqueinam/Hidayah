@@ -5,7 +5,6 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject

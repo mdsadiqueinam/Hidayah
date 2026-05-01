@@ -9,8 +9,8 @@ import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import io.github.mdsadiqueinam.hidayah.util.PermissionUtils
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,9 +57,9 @@ data class HomeUiState(
     val onFocusModeToggle: (Boolean) -> Unit = {},
     val onPauseDurationChange: (String?) -> Unit = {}
 ) {
-    val totalScreenTime: String get() = TimeUtils.formatDuration(totalScreenTimeMs)
-    val controlledScreenTime: String get() = TimeUtils.formatDuration(controlledScreenTimeMs)
-    val screenTimeLimit: String get() = TimeUtils.formatDuration(screenTimeLimitMs)
+    val totalScreenTime: String get() = DateTimeUtils.formatDuration(totalScreenTimeMs)
+    val controlledScreenTime: String get() = DateTimeUtils.formatDuration(controlledScreenTimeMs)
+    val screenTimeLimit: String get() = DateTimeUtils.formatDuration(screenTimeLimitMs)
 }
 
 @HiltViewModel
@@ -123,7 +123,7 @@ class HomeViewModel @Inject constructor(
 
     private fun updatePauseDuration(duration: String?) {
         val pausedUntil = if (duration != null) {
-            System.currentTimeMillis() + TimeUtils.parsePauseDuration(duration)
+            System.currentTimeMillis() + DateTimeUtils.parsePauseDuration(duration)
         } else {
             0L
         }

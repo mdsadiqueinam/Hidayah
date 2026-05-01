@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 
 @Composable
 fun AppIdentityHero(app: ControlledApp, modifier: Modifier = Modifier) {
@@ -220,7 +220,7 @@ private fun LimitValueDisplay(value: Int, modifier: Modifier = Modifier) {
     val valueInMillis = value * 60L * 1000L
     Row(modifier = modifier, verticalAlignment = Alignment.Bottom) {
         Text(
-            text = if (value == 0) "None" else TimeUtils.formatDuration(valueInMillis),
+            text = if (value == 0) "None" else DateTimeUtils.formatDuration(valueInMillis),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary

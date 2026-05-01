@@ -8,7 +8,7 @@ import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +25,7 @@ data class ShieldUiState(
     val usageTimeMs: Long = 0L,
     val attempts: Int = 0
 ) {
-    val usageTime: String get() = TimeUtils.formatDuration(usageTimeMs)
+    val usageTime: String get() = DateTimeUtils.formatDuration(usageTimeMs)
 }
 
 @HiltViewModel

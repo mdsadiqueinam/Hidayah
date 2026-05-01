@@ -4,8 +4,8 @@ import android.app.usage.UsageStats
 import android.content.Context
 import android.util.Log
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 import io.github.mdsadiqueinam.hidayah.util.PackageUtils
-import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.concurrent.TimeUnit
 
 object HomeStatsHelper {
@@ -51,7 +51,7 @@ object HomeStatsHelper {
                 val appCategory = PackageUtils.getApplicationCategory(context, usageStats.packageName)
                 TopApp(
                     name = appName,
-                    usage = TimeUtils.formatDuration(usageStats.totalTimeInForeground),
+                    usage = DateTimeUtils.formatDuration(usageStats.totalTimeInForeground),
                     category = appCategory,
                     packageName = usageStats.packageName
                 )
@@ -65,9 +65,9 @@ object HomeStatsHelper {
         return rawControlledApps.map { app ->
             ControlledAppWithUsage(
                 app = app,
-                usage = TimeUtils.formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
+                usage = DateTimeUtils.formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
                 limit = if (app.dailyLimit > 0) {
-                    TimeUtils.formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
+                    DateTimeUtils.formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
                 } else {
                     "No limit"
                 }
