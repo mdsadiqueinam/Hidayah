@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 
 @Composable
 fun AppIdentityHero(app: ControlledApp, modifier: Modifier = Modifier) {
@@ -154,7 +155,7 @@ private fun DailyLimitSection(
         Slider(
             value = if (dailyLimit == 0) 0f else dailyLimit.toFloat(),
             onValueChange = { onDailyLimitChange(it.toInt()) },
-            valueRange = 0f..120f,
+            valueRange = 0f..180f,
             steps = 23,
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
@@ -216,21 +217,14 @@ private fun SessionDurationSection(
 
 @Composable
 private fun LimitValueDisplay(value: Int, modifier: Modifier = Modifier) {
+    val valueInMillis = value * 60L * 1000L
     Row(modifier = modifier, verticalAlignment = Alignment.Bottom) {
         Text(
-            text = if (value == 0) "None" else value.toString(),
+            text = if (value == 0) "None" else TimeUtils.formatDuration(valueInMillis),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        if (value > 0) {
-            Text(
-                text = "m",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
-            )
-        }
     }
 }
 

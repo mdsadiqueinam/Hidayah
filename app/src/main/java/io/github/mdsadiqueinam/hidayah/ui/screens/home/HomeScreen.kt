@@ -43,16 +43,6 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier,
         topBar = { HomeTopAppBar() },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
-            ) {
-                Icon(Icons.Default.Insights, contentDescription = "Insights")
-            }
-        },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         HomeScreenContent(
