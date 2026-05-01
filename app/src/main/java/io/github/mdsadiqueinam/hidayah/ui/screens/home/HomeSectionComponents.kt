@@ -407,7 +407,7 @@ private fun PauseOptionsRow(
                 color = if (isSelected) {
                     MaterialTheme.colorScheme.primaryContainer
                 } else {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
                 },
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
