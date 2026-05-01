@@ -2,10 +2,9 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
 import android.app.usage.UsageStats
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.util.Log
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.util.PackageUtils
 import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import java.util.concurrent.TimeUnit
 
@@ -48,8 +47,8 @@ object HomeStatsHelper {
             .sortedByDescending { it.totalTimeInForeground }
             .take(TOP_APPS_LIMIT)
             .map { usageStats ->
-                val appName = getApplicationName(context, usageStats.packageName)
-                val appCategory = getApplicationCategory(context, usageStats.packageName)
+                val appName = PackageUtils.getApplicationName(context, usageStats.packageName)
+                val appCategory = PackageUtils.getApplicationCategory(context, usageStats.packageName)
                 TopApp(
                     name = appName,
                     usage = TimeUtils.formatDuration(usageStats.totalTimeInForeground),
@@ -73,44 +72,6 @@ object HomeStatsHelper {
                     "No limit"
                 }
             )
-        }
-    }
-
-    private fun getApplicationName(context: Context, packageName: String): String {
-        return try {
-            val packageManager = context.packageManager
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(appInfo).toString()
-        } catch (e: PackageManager.NameNotFoundException) {
-            Log.w("HomeStatsHelper", "Package not found: $packageName")
-            packageName
-        } catch (e: SecurityException) {
-            Log.w("HomeStatsHelper", "Security exception getting app info for $packageName")
-            packageName
-        }
-    }
-
-    private fun getApplicationCategory(context: Context, packageName: String): String {
-        return try {
-            val packageManager = context.packageManager
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            when (appInfo.category) {
-                ApplicationInfo.CATEGORY_AUDIO -> "Audio"
-                ApplicationInfo.CATEGORY_GAME -> "Games"
-                ApplicationInfo.CATEGORY_IMAGE -> "Image"
-                ApplicationInfo.CATEGORY_MAPS -> "Maps"
-                ApplicationInfo.CATEGORY_NEWS -> "News"
-                ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
-                ApplicationInfo.CATEGORY_SOCIAL -> "Social"
-                ApplicationInfo.CATEGORY_VIDEO -> "Video"
-                else -> "App"
-            }
-        } catch (e: PackageManager.NameNotFoundException) {
-            Log.w("HomeStatsHelper", "Package not found: $packageName")
-            "App"
-        } catch (e: SecurityException) {
-            Log.w("HomeStatsHelper", "Security exception getting category for $packageName")
-            "App"
         }
     }
 }

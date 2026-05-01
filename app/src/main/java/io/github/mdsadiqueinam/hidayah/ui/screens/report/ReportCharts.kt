@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Calendar
 
 private const val DONUT_STOKE_WIDTH = 40f
 private const val DONUT_START_ANGLE = -90f
@@ -34,8 +35,31 @@ private val BAR_CORNER_RADIUS = 100.dp
 private const val BAR_BACKGROUND_COLOR = 0xFFE6EDE9
 
 @Composable
-fun WeeklyBarChart(data: List<Long>, modifier: Modifier = Modifier) {
-    val days = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+fun WeeklyBarChart(
+    data: List<Long>,
+    modifier: Modifier = Modifier
+) {
+    require(data.size == 7) { "Data must contain exactly 7 days" }
+
+    val calendar = Calendar.getInstance()
+
+    // Generate last 7 days labels (oldest → newest)
+    val days = (6 downTo 0).map { i ->
+        calendar.timeInMillis = System.currentTimeMillis()
+        calendar.add(Calendar.DAY_OF_YEAR, -i)
+
+        when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.MONDAY -> "MON"
+            Calendar.TUESDAY -> "TUE"
+            Calendar.WEDNESDAY -> "WED"
+            Calendar.THURSDAY -> "THU"
+            Calendar.FRIDAY -> "FRI"
+            Calendar.SATURDAY -> "SAT"
+            Calendar.SUNDAY -> "SUN"
+            else -> ""
+        }
+    }
+
     val maxUsage = data.maxOrNull()?.coerceAtLeast(1L) ?: 1L
 
     Row(
@@ -45,10 +69,12 @@ fun WeeklyBarChart(data: List<Long>, modifier: Modifier = Modifier) {
     ) {
         data.forEachIndexed { index, usage ->
             val fraction = usage.toFloat() / maxUsage.toFloat()
+
             BarItem(
                 label = days[index],
                 fraction = fraction,
-                isHighlight = index == 5,
+                // highlight today (last item)
+                isHighlight = index == data.lastIndex,
                 modifier = Modifier.weight(1f)
             )
         }

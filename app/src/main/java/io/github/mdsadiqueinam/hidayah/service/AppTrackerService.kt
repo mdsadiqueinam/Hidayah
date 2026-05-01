@@ -5,13 +5,13 @@ import android.app.Service
 import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.os.IBinder
-import android.provider.Settings
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.PermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -73,7 +73,7 @@ class AppTrackerService : Service() {
 
         val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
-        if (!Settings.canDrawOverlays(this)) {
+        if (!PermissionUtils.hasOverlayPermission(this)) {
             Log.w(
                 "AppTrackerService",
                 "Overlay permission NOT granted. ShieldActivity might not show."

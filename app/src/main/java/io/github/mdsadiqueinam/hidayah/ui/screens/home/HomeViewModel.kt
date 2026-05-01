@@ -1,8 +1,6 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
-import android.app.AppOpsManager
 import android.content.Context
-import android.os.Process
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,6 +9,7 @@ import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.PermissionUtils
 import io.github.mdsadiqueinam.hidayah.util.TimeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -155,13 +154,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun checkPermission() {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.noteOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            context.packageName
-        )
-        val granted = mode == AppOpsManager.MODE_ALLOWED
+        val granted = PermissionUtils.hasUsageStatsPermission(context)
         _uiState.update { it.copy(isUsageStatsPermissionGranted = granted) }
         if (granted) {
             refreshUsageStats()
