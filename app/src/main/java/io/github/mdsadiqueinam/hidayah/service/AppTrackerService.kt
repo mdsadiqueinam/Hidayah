@@ -5,12 +5,13 @@ import android.app.Service
 import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.os.IBinder
-import android.provider.Settings
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.PermissionUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,12 +28,17 @@ class AppTrackerService : Service() {
     @Inject
     lateinit var repository: AppRepository
 
+    @Inject
+    lateinit var dbRepository: AppDatabaseRepository
+
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var trackingJob: Job? = null
 
     private var currentPackageName: String? = null
     private var sessionStartTime: Long = 0L
     private var lastShieldTriggeredPackage: String? = null
+
+    private var totalDailyUsageMs: Long = 0L
 
     private var configCache: ShieldConfig? = null
     private var controlledAppsCache: Map<String, ControlledApp> = emptyMap()
@@ -69,7 +75,7 @@ class AppTrackerService : Service() {
 
         val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
-        if (!Settings.canDrawOverlays(this)) {
+        if (!PermissionUtils.hasOverlayPermission(this)) {
             Log.w(
                 "AppTrackerService",
                 "Overlay permission NOT granted. ShieldActivity might not show."
@@ -80,16 +86,24 @@ class AppTrackerService : Service() {
             val myPackageName = packageName
 
             launch {
-                repository.getShieldConfig().collect {
+                dbRepository.getShieldConfig().collect {
                     Log.i("AppTrackerService", "Config updated: $it")
                     configCache = it ?: ShieldConfig()
                 }
             }
 
             launch {
-                repository.getControlledApps().collect {
+                dbRepository.getControlledApps().collect {
                     Log.i("AppTrackerService", "Controlled apps updated: ${it.size} apps")
                     controlledAppsCache = it.associateBy { app -> app.packageName }
+                }
+            }
+
+            launch {
+                while (isActive) {
+                    val stats = repository.getDailyUsageStats()
+                    totalDailyUsageMs = stats.values.sumOf { it.totalTimeInForeground }
+                    delay(CHECK_INTERVAL_MS)
                 }
             }
 
@@ -116,9 +130,19 @@ class AppTrackerService : Service() {
             resetSession()
             delay(CHECK_INTERVAL_MS)
             return
-        }
+            }
 
-        val topPackage = AppTrackerHelper.pollTopPackage(usageStatsManager, now)
+            val topPackage = AppTrackerHelper.pollTopPackage(usageStatsManager, now)
+
+            // Global screen time limit check
+            if (config != null && totalDailyUsageMs >= config.screenTimeLimit &&
+            topPackage != myPackageName && topPackage != "io.github.mdsadiqueinam.hidayah"
+            ) {
+            Log.i("AppTrackerService", "Global screen time limit reached: $totalDailyUsageMs")
+            triggerShield("GLOBAL_LIMIT")
+            delay(POLL_INTERVAL_MS)
+            return
+        }
 
         if (topPackage != null && topPackage != myPackageName &&
             topPackage != "io.github.mdsadiqueinam.hidayah"

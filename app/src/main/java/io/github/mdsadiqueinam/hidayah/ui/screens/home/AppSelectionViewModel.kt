@@ -3,6 +3,7 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppItem
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
@@ -25,7 +26,8 @@ data class AppSelectionUiState(
 
 @HiltViewModel
 class AppSelectionViewModel @Inject constructor(
-    private val repository: AppRepository
+    private val repository: AppRepository,
+    private val dbRepository: AppDatabaseRepository
 ) : ViewModel() {
     private var allApps: List<AppItem> = emptyList()
 
@@ -45,7 +47,7 @@ class AppSelectionViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch(Dispatchers.IO) {
             allApps = repository.getInstalledApps()
-            val savedPackages = repository.getControlledPackageNames().toSet()
+            val savedPackages = dbRepository.getControlledPackageNames().toSet()
             _uiState.update { it.copy(selectedPackages = savedPackages) }
             filterApps()
         }
@@ -81,7 +83,7 @@ class AppSelectionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val appsToSave = allApps.filter { selectedPackages.contains(it.packageName) }
                 .map { ControlledApp(it.packageName, it.appName) }
-            repository.saveControlledApps(appsToSave)
+            dbRepository.saveControlledApps(appsToSave)
         }
     }
 }

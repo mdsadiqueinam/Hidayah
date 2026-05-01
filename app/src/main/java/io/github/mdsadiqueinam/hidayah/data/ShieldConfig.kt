@@ -14,5 +14,6 @@ data class ShieldConfig(
     val audioPath: String? = null,
     val isProtectionActive: Boolean = true,
     val selectedPauseDuration: String? = null,
-    val pausedUntil: Long = 0L // Timestamp when pause ends
+    val pausedUntil: Long = 0L, // Timestamp when pause ends
+    val screenTimeLimit: Long = 5 * 60 * 60 * 1000L // 5 hours default
 )

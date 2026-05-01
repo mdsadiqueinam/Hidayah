@@ -10,5 +10,6 @@ data class ControlledApp(
     val dailyLimit: Int = 0, // 0 for "No Limit"
     val openDelay: Int = 0, // In seconds
     val sessionLimit: Int = 0, // In minutes
-    val isHardLocked: Boolean = false
+    val isHardLocked: Boolean = false,
+    val attempts: Int = 0
 )

@@ -3,6 +3,7 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
@@ -32,14 +33,15 @@ data class ShieldSettingsUiState(
 
 @HiltViewModel
 class ShieldSettingsViewModel @Inject constructor(
-    private val repository: AppRepository
+    private val repository: AppRepository,
+    private val dbRepository: AppDatabaseRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShieldSettingsUiState())
     val uiState: StateFlow<ShieldSettingsUiState> = _uiState.asStateFlow()
 
     init {
-        repository.getShieldConfig()
+        dbRepository.getShieldConfig()
             .onEach { config ->
                 if (config != null) {
                     _uiState.update { state ->
@@ -123,7 +125,7 @@ class ShieldSettingsViewModel @Inject constructor(
 
     private fun saveConfig() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateShieldConfig(_uiState.value.config)
+            dbRepository.updateShieldConfig(_uiState.value.config)
         }
     }
 }

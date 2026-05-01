@@ -15,6 +15,9 @@ interface ControlledAppDao {
     @Query("SELECT * FROM controlled_apps WHERE packageName = :packageName")
     suspend fun getControlledApp(packageName: String): ControlledApp?
 
+    @Query("SELECT * FROM controlled_apps WHERE packageName = :packageName")
+    fun getControlledAppFlow(packageName: String): Flow<ControlledApp?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(apps: List<ControlledApp>)
 

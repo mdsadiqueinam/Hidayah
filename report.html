@@ -1,0 +1,540 @@
+<!doctype html>
+
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-bright': '#f8faf9',
+              'on-surface-variant': '#404847',
+              surface: '#f8faf9',
+              'surface-container': '#eceeed',
+              'surface-container-low': '#f2f4f3',
+              'tertiary-fixed': '#ffddb5',
+              'surface-container-high': '#e6e9e8',
+              'primary-fixed-dim': '#a1cfca',
+              'secondary-fixed': '#cbead4',
+              'on-error': '#ffffff',
+              background: '#f8faf9',
+              'surface-dim': '#d8dada',
+              'surface-tint': '#396662',
+              'outline-variant': '#c0c8c6',
+              'on-error-container': '#93000a',
+              'surface-container-highest': '#e1e3e2',
+              'on-primary-fixed-variant': '#204e4a',
+              error: '#ba1a1a',
+              'primary-fixed': '#bcece6',
+              'on-tertiary': '#ffffff',
+              'inverse-surface': '#2e3131',
+              tertiary: '#553500',
+              'on-tertiary-fixed-variant': '#643f00',
+              'surface-container-lowest': '#ffffff',
+              'on-secondary-container': '#4f6b59',
+              'tertiary-fixed-dim': '#fabb65',
+              'primary-container': '#2d5a56',
+              'secondary-container': '#cbead4',
+              'on-primary-container': '#a1cfca',
+              'on-secondary-fixed-variant': '#324c3c',
+              'on-secondary-fixed': '#052013',
+              'on-background': '#191c1c',
+              outline: '#707977',
+              'on-primary': '#ffffff',
+              'inverse-on-surface': '#eff1f0',
+              'on-secondary': '#ffffff',
+              'error-container': '#ffdad6',
+              secondary: '#496453',
+              primary: '#12423f',
+              'on-tertiary-container': '#fbbb66',
+              'inverse-primary': '#a1cfca',
+              'on-primary-fixed': '#00201e',
+              'secondary-fixed-dim': '#b0ceb9',
+              'on-surface': '#191c1c',
+              'tertiary-container': '#744a00',
+              'on-tertiary-fixed': '#2a1800',
+              'surface-variant': '#e1e3e2',
+            },
+            borderRadius: {
+              DEFAULT: '0.25rem',
+              lg: '0.5rem',
+              xl: '0.75rem',
+              full: '9999px',
+            },
+            spacing: {
+              lg: '24px',
+              'container-padding': '24px',
+              sm: '8px',
+              unit: '4px',
+              xs: '4px',
+              'stack-gap': '20px',
+              md: '16px',
+              xl: '40px',
+            },
+            fontFamily: {
+              'headline-md': ['Manrope'],
+              'stat-value': ['Manrope'],
+              'label-caps': ['Manrope'],
+              display: ['Manrope'],
+              'headline-lg': ['Manrope'],
+              'body-lg': ['Manrope'],
+              'body-md': ['Manrope'],
+            },
+            fontSize: {
+              'headline-md': [
+                '22px',
+                { lineHeight: '28px', fontWeight: '600' },
+              ],
+              'stat-value': [
+                '32px',
+                {
+                  lineHeight: '40px',
+                  letterSpacing: '-0.01em',
+                  fontWeight: '500',
+                },
+              ],
+              'label-caps': [
+                '12px',
+                {
+                  lineHeight: '16px',
+                  letterSpacing: '0.05em',
+                  fontWeight: '700',
+                },
+              ],
+              display: [
+                '40px',
+                {
+                  lineHeight: '48px',
+                  letterSpacing: '-0.02em',
+                  fontWeight: '700',
+                },
+              ],
+              'headline-lg': [
+                '28px',
+                {
+                  lineHeight: '36px',
+                  letterSpacing: '-0.01em',
+                  fontWeight: '600',
+                },
+              ],
+              'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
+              'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+      body {
+        font-family: 'Manrope', sans-serif;
+      }
+      .bento-card {
+        background-color: #ffffff;
+        box-shadow: 0 4px 20px rgba(45, 90, 86, 0.08);
+        border-radius: 24px;
+        transition: all 0.3s ease;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-surface-bright text-on-background min-h-screen pb-32">
+    <!-- TopAppBar -->
+    <header
+      class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#FBFCFB] dark:bg-stone-950 shadow-[0_4px_20px_rgba(45,90,86,0.08)]"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 rounded-full overflow-hidden bg-secondary-container"
+        >
+          <img
+            class="w-full h-full object-cover"
+            data-alt="Close up of a friendly user profile avatar with a soft natural background"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjwR7It9EkpBbZaodzSO4TIaMsJtTZ6WFsj898Re2rBiwvS0HfQSu_oCl8ElRBnpNEWj1P2ABZN8gr6rzsT7a-52Dq1gTFlhUYYFqcTrfZqwLdMvptwiTN60jBLbjXFUWjSBfwHe0pHo8gB7P8NQIbhmIrIb6l4AKdp6NQ2TYRHVzqABkI1eejI-Yvs1N7QE-YYT_e60XLWYQBlsMrUzSl3FVpcA3cgnxSPnSNCUlgxExuTKBJI_QcZGlD497AMKRLdsOFlb79kbE4"
+          />
+        </div>
+        <span
+          class="text-lg font-bold tracking-widest text-[#2D5A56] dark:text-stone-100"
+          >Hidayah</span
+        >
+      </div>
+      <div class="flex items-center gap-4">
+        <button
+          class="material-symbols-outlined text-[#2D5A56] dark:text-[#4A8B84] hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors p-2 rounded-full"
+          data-icon="notifications"
+        >
+          notifications
+        </button>
+      </div>
+    </header>
+    <main class="mt-20 px-lg max-w-2xl mx-auto space-y-xl">
+      <!-- Header Section -->
+      <header class="pt-4">
+        <h1 class="font-headline-lg text-headline-lg text-primary mb-1">
+          Usage Insights
+        </h1>
+        <p class="font-body-md text-body-md text-on-surface-variant opacity-80">
+          Reflecting on your digital mindfulness
+        </p>
+      </header>
+      <!-- Main Stats Bento Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-gap">
+        <!-- Shield Success Metric -->
+        <div class="bento-card p-6 flex flex-col justify-between aspect-square">
+          <div>
+            <span
+              class="font-label-caps text-label-caps text-secondary uppercase tracking-widest"
+              >Shield Interventions</span
+            >
+            <div class="mt-4 flex items-baseline gap-2">
+              <span class="font-stat-value text-stat-value text-primary"
+                >42</span
+              >
+              <span class="font-body-md text-body-md text-on-surface-variant"
+                >times</span
+              >
+            </div>
+          </div>
+          <div class="mt-4 bg-secondary-container/30 p-4 rounded-xl">
+            <p class="font-body-md text-body-md text-secondary leading-tight">
+              You stayed away and reclaimed
+              <span class="font-bold text-primary">3.5 hours</span> this week.
+            </p>
+          </div>
+          <div class="mt-4 flex items-center gap-2">
+            <span
+              class="material-symbols-outlined text-secondary"
+              data-icon="shield_with_heart"
+              data-weight="fill"
+              style="font-variation-settings: 'FILL' 1"
+              >shield_with_heart</span
+            >
+            <span class="text-xs font-bold text-secondary"
+              >Mindfulness Active</span
+            >
+          </div>
+        </div>
+        <!-- Comparison & Daily Average -->
+        <div class="space-y-stack-gap">
+          <div class="bento-card p-6">
+            <span
+              class="font-label-caps text-label-caps text-secondary uppercase tracking-widest"
+              >Efficiency</span
+            >
+            <div class="mt-4 flex items-center gap-3">
+              <div
+                class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-primary"
+                  data-icon="trending_down"
+                  >trending_down</span
+                >
+              </div>
+              <div>
+                <p class="font-headline-md text-headline-md text-primary">
+                  5% less
+                </p>
+                <p class="font-body-md text-body-md text-on-surface-variant">
+                  than last week
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="bento-card p-6 bg-primary-container">
+            <span
+              class="font-label-caps text-label-caps text-on-primary-container uppercase tracking-widest opacity-80"
+              >Daily Average</span
+            >
+            <div class="mt-2 flex items-baseline gap-1">
+              <span class="font-stat-value text-stat-value text-white"
+                >2h 15m</span
+              >
+            </div>
+            <div
+              class="mt-4 w-full h-1 bg-white/20 rounded-full overflow-hidden"
+            >
+              <div class="h-full bg-white w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Weekly Trend Bar Chart -->
+      <section class="bento-card p-8">
+        <div class="flex justify-between items-end mb-8">
+          <div>
+            <span
+              class="font-label-caps text-label-caps text-secondary uppercase tracking-widest"
+              >Weekly Trend</span
+            >
+            <h3 class="font-headline-md text-headline-md text-primary mt-1">
+              Screen Time
+            </h3>
+          </div>
+          <div class="text-right">
+            <span class="font-body-md text-body-md text-on-surface-variant"
+              >Last 7 Days</span
+            >
+          </div>
+        </div>
+        <div class="flex items-end justify-between h-48 gap-3">
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 60%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >MON</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 45%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >TUE</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 85%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >WED</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 30%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >THU</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 55%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >FRI</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-tertiary-container rounded-t-full"
+                style="height: 95%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >SAT</span
+            >
+          </div>
+          <div class="flex flex-col items-center flex-1 gap-2">
+            <div class="w-full bg-[#E6EDE9] rounded-t-full relative h-32">
+              <div
+                class="absolute bottom-0 w-full bg-primary-container rounded-t-full"
+                style="height: 40%"
+              ></div>
+            </div>
+            <span class="text-[10px] font-bold text-on-surface-variant"
+              >SUN</span
+            >
+          </div>
+        </div>
+      </section>
+      <!-- Category Breakdown -->
+      <section class="bento-card p-8">
+        <span
+          class="font-label-caps text-label-caps text-secondary uppercase tracking-widest"
+          >Category Breakdown</span
+        >
+        <div class="mt-8 flex flex-col md:flex-row items-center gap-10">
+          <div class="relative w-40 h-40">
+            <svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+              <circle
+                class="stroke-surface-container"
+                cx="18"
+                cy="18"
+                fill="none"
+                r="16"
+                stroke-width="3"
+              ></circle>
+              <!-- Social 60% -->
+              <circle
+                class="stroke-primary"
+                cx="18"
+                cy="18"
+                fill="none"
+                r="16"
+                stroke-dasharray="60, 100"
+                stroke-linecap="round"
+                stroke-width="4"
+              ></circle>
+              <!-- Productivity 20% -->
+              <circle
+                class="stroke-secondary"
+                cx="18"
+                cy="18"
+                fill="none"
+                r="16"
+                stroke-dasharray="20, 100"
+                stroke-dashoffset="-60"
+                stroke-linecap="round"
+                stroke-width="4"
+              ></circle>
+              <!-- Other 20% -->
+              <circle
+                class="stroke-tertiary-fixed-dim"
+                cx="18"
+                cy="18"
+                fill="none"
+                r="16"
+                stroke-dasharray="20, 100"
+                stroke-dashoffset="-80"
+                stroke-linecap="round"
+                stroke-width="4"
+              ></circle>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="font-headline-md text-primary">100%</span>
+            </div>
+          </div>
+          <div class="flex-1 w-full space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-primary"></div>
+                <span class="font-body-md text-on-surface">Social Media</span>
+              </div>
+              <span class="font-bold text-primary">60%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-secondary"></div>
+                <span class="font-body-md text-on-surface">Productivity</span>
+              </div>
+              <span class="font-bold text-secondary">20%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></div>
+                <span class="font-body-md text-on-surface">Other</span>
+              </div>
+              <span class="font-bold text-on-surface-variant">20%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Decorative Quote Card -->
+      <div
+        class="relative h-48 rounded-[32px] overflow-hidden flex items-center justify-center p-8 text-center group"
+      >
+        <img
+          class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-700"
+          data-alt="Dreamy soft focus green leaves with morning dew and ethereal sunlight filtering through a peaceful forest"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2ZAIMWtjfLd_BnGiVGvFdttETaCwtHt8SblZGAMfwzlzRarbuZbZDYeVzUCi_XXWh3M7nmMJjgTklTQNpoJ7hWcNa-TXsrCnEBUIrpzNTGFL5A5M1Nu1R98K5CPkaMtpn-_LtNlZP4Xf96j6Xksr4XLHyZU3bvjeLrfnLEOxiko69lVmYWz8fgGhsuGVJlrhlv72MGUDg-dn03rqK76UGkzDHSbSTls08NYoridb1LesaXt9gUQLSIuolkgX5sJph5i3i2iSNvsMH"
+        />
+        <div class="relative z-10">
+          <p class="text-white font-body-lg italic opacity-90">
+            "Wisdom is a tree of life to those who take hold of her."
+          </p>
+        </div>
+      </div>
+    </main>
+    <!-- BottomNavBar -->
+    <nav
+      class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md rounded-t-[32px] shadow-[0_-4px_24px_rgba(45,90,86,0.12)] border-t border-stone-100 dark:border-stone-800"
+    >
+      <div
+        class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-600 hover:text-[#2D5A56] transition-all group"
+      >
+        <span class="material-symbols-outlined text-[24px]" data-icon="home_max"
+          >home_max</span
+        >
+        <span
+          class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-wider mt-1"
+          >Home</span
+        >
+      </div>
+      <div
+        class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-600 hover:text-[#2D5A56] transition-all group"
+      >
+        <span
+          class="material-symbols-outlined text-[24px]"
+          data-icon="shield_with_heart"
+          >shield_with_heart</span
+        >
+        <span
+          class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-wider mt-1"
+          >Focus</span
+        >
+      </div>
+      <div
+        class="flex flex-col items-center justify-center text-[#2D5A56] dark:text-[#4A8B84] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#2D5A56] after:rounded-full"
+      >
+        <span
+          class="material-symbols-outlined text-[24px]"
+          data-icon="analytics"
+          data-weight="fill"
+          style="font-variation-settings: 'FILL' 1"
+          >analytics</span
+        >
+        <span
+          class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-wider mt-1"
+          >Reports</span
+        >
+      </div>
+      <div
+        class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-600 hover:text-[#2D5A56] transition-all group"
+      >
+        <span class="material-symbols-outlined text-[24px]" data-icon="person"
+          >person</span
+        >
+        <span
+          class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-wider mt-1"
+          >Profile</span
+        >
+      </div>
+    </nav>
+  </body>
+</html>

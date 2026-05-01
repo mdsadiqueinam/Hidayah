@@ -26,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -184,14 +185,13 @@ fun ShieldActionButtons(
     uiState: ShieldSettingsUiState,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        TextButton(
+        OutlinedButton(
             onClick = uiState.onResetToDefaults,
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
                 Icons.Default.RestartAlt,
@@ -208,7 +208,7 @@ fun ShieldActionButtons(
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             shape = CircleShape,
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save Changes", style = MaterialTheme.typography.titleMedium)
         }

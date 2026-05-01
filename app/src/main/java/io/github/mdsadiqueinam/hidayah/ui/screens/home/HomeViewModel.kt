@@ -1,15 +1,16 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
-import android.app.AppOpsManager
 import android.content.Context
-import android.os.Process
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.mdsadiqueinam.hidayah.data.AppDatabaseRepository
 import io.github.mdsadiqueinam.hidayah.data.AppRepository
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
 import io.github.mdsadiqueinam.hidayah.data.ShieldConfig
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
+import io.github.mdsadiqueinam.hidayah.util.PermissionUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +23,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-private const val DEFAULT_SCREEN_TIME_LIMIT_HOURS = 5L
 
 data class TopApp(
     val name: String,
@@ -44,10 +43,8 @@ data class HomeUiState(
     val isProtectionActive: Boolean = true,
     val isFocusModeActive: Boolean = false,
     val selectedPauseDuration: String? = null,
-    val totalScreenTime: String = "0h 0m",
-    val controlledScreenTime: String = "0h 0m",
-    val screenTimeLimit: String = "5h 0m",
-    val screenTimeLimitMs: Long = TimeUnit.HOURS.toMillis(DEFAULT_SCREEN_TIME_LIMIT_HOURS),
+    val pausedUntilMs: Long = 0,
+    val screenTimeLimitMs: Long = 0,
     val totalScreenTimeMs: Long = 0,
     val controlledScreenTimeMs: Long = 0,
     val screenTimePercentage: String = "0% of the day",
@@ -58,11 +55,16 @@ data class HomeUiState(
     val onProtectionToggle: (Boolean) -> Unit = {},
     val onFocusModeToggle: (Boolean) -> Unit = {},
     val onPauseDurationChange: (String?) -> Unit = {}
-)
+) {
+    val totalScreenTime: String get() = DateTimeUtils.formatDuration(totalScreenTimeMs)
+    val controlledScreenTime: String get() = DateTimeUtils.formatDuration(controlledScreenTimeMs)
+    val screenTimeLimit: String get() = DateTimeUtils.formatDuration(screenTimeLimitMs)
+}
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: AppRepository,
+    private val dbRepository: AppDatabaseRepository,
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -98,16 +100,18 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun observeShieldConfig() {
-        repository.getShieldConfig()
+        dbRepository.getShieldConfig()
             .onEach { config ->
                 if (config != null) {
                     shieldConfig = config
-                    _uiState.update {
-                        it.copy(
-                            isProtectionActive = config.isProtectionActive,
-                            selectedPauseDuration = config.selectedPauseDuration
-                        )
-                    }
+                }
+                _uiState.update {
+                    it.copy(
+                        isProtectionActive = shieldConfig.isProtectionActive,
+                        selectedPauseDuration = shieldConfig.selectedPauseDuration,
+                        pausedUntilMs = shieldConfig.pausedUntil,
+                        screenTimeLimitMs = shieldConfig.screenTimeLimit
+                    )
                 }
             }
             .launchIn(viewModelScope)
@@ -120,7 +124,7 @@ class HomeViewModel @Inject constructor(
 
     private fun updatePauseDuration(duration: String?) {
         val pausedUntil = if (duration != null) {
-            System.currentTimeMillis() + parsePauseDuration(duration)
+            System.currentTimeMillis() + DateTimeUtils.parsePauseDuration(duration)
         } else {
             0L
         }
@@ -131,34 +135,14 @@ class HomeViewModel @Inject constructor(
         saveShieldConfig(newConfig)
     }
 
-    private fun parsePauseDuration(duration: String): Long {
-        return try {
-            val value = duration.dropLast(1).toLong()
-            val unit = duration.last()
-            when (unit) {
-                'm' -> TimeUnit.MINUTES.toMillis(value)
-                'h' -> TimeUnit.HOURS.toMillis(value)
-                else -> 0L
-            }
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
     private fun saveShieldConfig(config: ShieldConfig) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateShieldConfig(config)
+            dbRepository.updateShieldConfig(config)
         }
     }
 
     private fun checkPermission() {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.noteOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
-            context.packageName
-        )
-        val granted = mode == AppOpsManager.MODE_ALLOWED
+        val granted = PermissionUtils.hasUsageStatsPermission(context)
         _uiState.update { it.copy(isUsageStatsPermissionGranted = granted) }
         if (granted) {
             refreshUsageStats()
@@ -182,7 +166,7 @@ class HomeViewModel @Inject constructor(
 
     private fun observeControlledApps() {
         viewModelScope.launch {
-            repository.getControlledApps().collect { apps ->
+            dbRepository.getControlledApps().collect { apps ->
                 rawControlledApps = apps
                 refreshUsageStats()
             }
@@ -212,8 +196,6 @@ class HomeViewModel @Inject constructor(
         // Update UI state
         _uiState.update { state ->
             state.copy(
-                totalScreenTime = HomeStatsHelper.formatDuration(totalTimeMs),
-                controlledScreenTime = HomeStatsHelper.formatDuration(controlledTimeMs),
                 totalScreenTimeMs = totalTimeMs,
                 controlledScreenTimeMs = controlledTimeMs,
                 screenTimeStatus = status,

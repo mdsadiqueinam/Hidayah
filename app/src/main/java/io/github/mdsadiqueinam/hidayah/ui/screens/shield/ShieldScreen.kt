@@ -1,5 +1,6 @@
 package io.github.mdsadiqueinam.hidayah.ui.screens.shield
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,26 +38,25 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil3.compose.AsyncImage
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import coil3.compose.AsyncImage
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 
 private const val BACKGROUND_IMAGE_ALPHA = 0.6f
 private const val BACKGROUND_OVERLAY_ALPHA = 0.4f
-private const val PROGRESS_BAR_WIDTH_MOCK = 0.3f
 
 @Composable
 fun ShieldScreen(
@@ -66,6 +68,15 @@ fun ShieldScreen(
     val uiState by viewModel.uiState.collectAsState()
     val shieldImage = rememberShieldImage(uiState.shieldConfig.imagePath)
     val context = LocalContext.current
+
+    LaunchedEffect(uiState.isCountdownActive) {
+        if (uiState.isCountdownActive) {
+            while (uiState.countdownSeconds > 0) {
+                kotlinx.coroutines.delay(1000)
+                viewModel.tickCountdown()
+            }
+        }
+    }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -80,7 +91,11 @@ fun ShieldScreen(
         }
     }
 
-    LaunchedEffect(uiState.shieldConfig.useVideo, uiState.shieldConfig.videoPath, uiState.shieldConfig.audioPath) {
+    LaunchedEffect(
+        uiState.shieldConfig.useVideo,
+        uiState.shieldConfig.videoPath,
+        uiState.shieldConfig.audioPath
+    ) {
         if (uiState.shieldConfig.useVideo && uiState.shieldConfig.videoPath != null) {
             exoPlayer.setMediaItem(MediaItem.fromUri(uiState.shieldConfig.videoPath!!))
             exoPlayer.prepare()
@@ -105,10 +120,19 @@ fun ShieldScreen(
             ShieldBackgroundImage(shieldImage)
         }
         ShieldGradientOverlay()
-        ShieldContentColumn(uiState, onClose, onOpen)
+        ShieldContentColumn(
+            uiState = uiState,
+            onClose = onClose,
+            onOpenFirstClick = { viewModel.startCountdown() },
+            onOpenSecondClick = {
+                viewModel.incrementAttempts()
+                onOpen()
+            }
+        )
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 private fun ShieldVideoBackground(exoPlayer: ExoPlayer, modifier: Modifier = Modifier) {
     AndroidView(
@@ -132,16 +156,15 @@ private fun ShieldVideoBackground(exoPlayer: ExoPlayer, modifier: Modifier = Mod
 @Composable
 private fun rememberShieldImage(imagePath: String?): ShieldImage {
     return remember(imagePath) {
-        val path = imagePath
         when {
-            path.isNullOrBlank() -> ShieldImage.Resource(defaultShieldImageResources.first())
-            path.startsWith("res:") -> {
-                val resId = path.substringAfter("res:").toIntOrNull()
+            imagePath.isNullOrBlank() -> ShieldImage.Resource(defaultShieldImageResources.first())
+            imagePath.startsWith("res:") -> {
+                val resId = imagePath.substringAfter("res:").toIntOrNull()
                 if (resId != null) ShieldImage.Resource(resId)
                 else ShieldImage.Resource(defaultShieldImageResources.first())
             }
 
-            else -> ShieldImage.UriImage(path)
+            else -> ShieldImage.UriImage(imagePath)
         }
     }
 }
@@ -186,7 +209,8 @@ private fun ShieldGradientOverlay(modifier: Modifier = Modifier) {
 private fun ShieldContentColumn(
     uiState: ShieldUiState,
     onClose: () -> Unit,
-    onOpen: () -> Unit,
+    onOpenFirstClick: () -> Unit,
+    onOpenSecondClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -196,15 +220,16 @@ private fun ShieldContentColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         ShieldIconSection()
         Spacer(modifier = Modifier.height(40.dp))
         ShieldTextSection(uiState)
         Spacer(modifier = Modifier.height(48.dp))
         ShieldUsageStats(uiState)
         Spacer(modifier = Modifier.weight(1f))
-        ShieldActionButtons(onClose, onOpen)
+        ShieldActionButtons(uiState, onClose, onOpenFirstClick, onOpenSecondClick)
         Spacer(modifier = Modifier.height(16.dp))
-        ShieldProgressIndicator()
+        ShieldProgressIndicator(uiState)
     }
 }
 
@@ -266,10 +291,24 @@ private fun ShieldUsageStats(
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.1f))
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val dailyLimit = uiState.controlledApp?.dailyLimit ?: 0
+        val dailyLimitText = if (dailyLimit > 0) " / ${DateTimeUtils.formatMinutes(dailyLimit)}" else ""
+        
         Text(
-            text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}",
+            text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}$dailyLimitText",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White.copy(alpha = 0.8f)
+        )
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .background(Color.White.copy(alpha = 0.3f), CircleShape)
+        )
+        Text(
+            text = "Attempts: ${uiState.attempts}",
             style = MaterialTheme.typography.labelLarge,
             color = Color.White.copy(alpha = 0.8f)
         )
@@ -278,8 +317,10 @@ private fun ShieldUsageStats(
 
 @Composable
 private fun ShieldActionButtons(
+    uiState: ShieldUiState,
     onClose: () -> Unit,
-    onOpen: () -> Unit,
+    onOpenFirstClick: () -> Unit,
+    onOpenSecondClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -303,17 +344,34 @@ private fun ShieldActionButtons(
             )
         }
 
+        val buttonText = when {
+            uiState.isCountdownActive -> "Wait (${uiState.countdownSeconds}s)"
+            uiState.isCountdownFinished -> "Open Application"
+            else -> "Open (tap, breathe 60s, tap again)"
+        }
+        val isEnabled = !uiState.isCountdownActive
+
         OutlinedButton(
-            onClick = onOpen,
+            onClick = {
+                if (uiState.isCountdownFinished) {
+                    onOpenSecondClick()
+                } else {
+                    onOpenFirstClick()
+                }
+            },
+            enabled = isEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
             shape = RoundedCornerShape(20.dp),
             border = androidx.compose.foundation.BorderStroke(2.dp, Color.White.copy(alpha = 0.5f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White,
+                disabledContentColor = Color.White.copy(alpha = 0.5f)
+            )
         ) {
             Text(
-                "Continue Anyway",
+                buttonText,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -321,7 +379,16 @@ private fun ShieldActionButtons(
 }
 
 @Composable
-private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
+private fun ShieldProgressIndicator(
+    uiState: ShieldUiState,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (uiState.isCountdownActive || uiState.isCountdownFinished) {
+        (60 - uiState.countdownSeconds) / 60f
+    } else {
+        0f
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -336,14 +403,18 @@ private fun ShieldProgressIndicator(modifier: Modifier = Modifier) {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(PROGRESS_BAR_WIDTH_MOCK)
+                    .fillMaxWidth(progress)
                     .fillMaxHeight()
                     .background(Color.White.copy(alpha = 0.8f))
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
+        val statusText = if (uiState.isCountdownActive) "BREATHING IN PROGRESS..." else "PROTECTION ACTIVE"
+        val sessionLimit = uiState.controlledApp?.sessionLimit ?: 0
+        val sessionLimitText = if (sessionLimit > 0) " • ${sessionLimit}M SESSION LIMIT" else ""
+        
         Text(
-            "PROTECTION ACTIVE",
+            text = "$statusText$sessionLimitText",
             style = MaterialTheme.typography.labelSmall.copy(
                 color = Color.White.copy(alpha = 0.6f),
                 letterSpacing = 1.sp,

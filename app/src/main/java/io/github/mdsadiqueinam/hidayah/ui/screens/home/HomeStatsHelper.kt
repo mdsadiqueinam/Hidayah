@@ -2,10 +2,10 @@ package io.github.mdsadiqueinam.hidayah.ui.screens.home
 
 import android.app.usage.UsageStats
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.util.Log
 import io.github.mdsadiqueinam.hidayah.data.ControlledApp
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
+import io.github.mdsadiqueinam.hidayah.util.PackageUtils
 import java.util.concurrent.TimeUnit
 
 object HomeStatsHelper {
@@ -47,11 +47,11 @@ object HomeStatsHelper {
             .sortedByDescending { it.totalTimeInForeground }
             .take(TOP_APPS_LIMIT)
             .map { usageStats ->
-                val appName = getApplicationName(context, usageStats.packageName)
-                val appCategory = getApplicationCategory(context, usageStats.packageName)
+                val appName = PackageUtils.getApplicationName(context, usageStats.packageName)
+                val appCategory = PackageUtils.getApplicationCategory(context, usageStats.packageName)
                 TopApp(
                     name = appName,
-                    usage = formatDuration(usageStats.totalTimeInForeground),
+                    usage = DateTimeUtils.formatDuration(usageStats.totalTimeInForeground),
                     category = appCategory,
                     packageName = usageStats.packageName
                 )
@@ -65,61 +65,13 @@ object HomeStatsHelper {
         return rawControlledApps.map { app ->
             ControlledAppWithUsage(
                 app = app,
-                usage = formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
+                usage = DateTimeUtils.formatDuration(stats[app.packageName]?.totalTimeInForeground ?: 0L),
                 limit = if (app.dailyLimit > 0) {
-                    formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
+                    DateTimeUtils.formatDuration(TimeUnit.MINUTES.toMillis(app.dailyLimit.toLong()))
                 } else {
                     "No limit"
                 }
             )
-        }
-    }
-
-    fun formatDuration(millis: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(millis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        return if (hours > 0) {
-            "${hours}h ${minutes}m"
-        } else {
-            "${minutes}m"
-        }
-    }
-
-    private fun getApplicationName(context: Context, packageName: String): String {
-        return try {
-            val packageManager = context.packageManager
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(appInfo).toString()
-        } catch (e: PackageManager.NameNotFoundException) {
-            Log.w("HomeStatsHelper", "Package not found: $packageName")
-            packageName
-        } catch (e: SecurityException) {
-            Log.w("HomeStatsHelper", "Security exception getting app info for $packageName")
-            packageName
-        }
-    }
-
-    private fun getApplicationCategory(context: Context, packageName: String): String {
-        return try {
-            val packageManager = context.packageManager
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            when (appInfo.category) {
-                ApplicationInfo.CATEGORY_AUDIO -> "Audio"
-                ApplicationInfo.CATEGORY_GAME -> "Games"
-                ApplicationInfo.CATEGORY_IMAGE -> "Image"
-                ApplicationInfo.CATEGORY_MAPS -> "Maps"
-                ApplicationInfo.CATEGORY_NEWS -> "News"
-                ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
-                ApplicationInfo.CATEGORY_SOCIAL -> "Social"
-                ApplicationInfo.CATEGORY_VIDEO -> "Video"
-                else -> "App"
-            }
-        } catch (e: PackageManager.NameNotFoundException) {
-            Log.w("HomeStatsHelper", "Package not found: $packageName")
-            "App"
-        } catch (e: SecurityException) {
-            Log.w("HomeStatsHelper", "Security exception getting category for $packageName")
-            "App"
         }
     }
 }
