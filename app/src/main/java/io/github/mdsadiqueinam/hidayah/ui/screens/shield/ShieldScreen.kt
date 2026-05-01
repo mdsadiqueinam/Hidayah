@@ -53,6 +53,7 @@ import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import io.github.mdsadiqueinam.hidayah.data.ShieldImage
 import io.github.mdsadiqueinam.hidayah.data.defaultShieldImageResources
+import io.github.mdsadiqueinam.hidayah.util.DateTimeUtils
 
 private const val BACKGROUND_IMAGE_ALPHA = 0.6f
 private const val BACKGROUND_OVERLAY_ALPHA = 0.4f
@@ -293,8 +294,11 @@ private fun ShieldUsageStats(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val dailyLimit = uiState.controlledApp?.dailyLimit ?: 0
+        val dailyLimitText = if (dailyLimit > 0) " / ${DateTimeUtils.formatMinutes(dailyLimit)}" else ""
+        
         Text(
-            text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}",
+            text = "${uiState.controlledApp?.appName ?: "App"}: ${uiState.usageTime}$dailyLimitText",
             style = MaterialTheme.typography.labelLarge,
             color = Color.White.copy(alpha = 0.8f)
         )
@@ -405,8 +409,12 @@ private fun ShieldProgressIndicator(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
+        val statusText = if (uiState.isCountdownActive) "BREATHING IN PROGRESS..." else "PROTECTION ACTIVE"
+        val sessionLimit = uiState.controlledApp?.sessionLimit ?: 0
+        val sessionLimitText = if (sessionLimit > 0) " • ${sessionLimit}M SESSION LIMIT" else ""
+        
         Text(
-            if (uiState.isCountdownActive) "BREATHING IN PROGRESS..." else "PROTECTION ACTIVE",
+            text = "$statusText$sessionLimitText",
             style = MaterialTheme.typography.labelSmall.copy(
                 color = Color.White.copy(alpha = 0.6f),
                 letterSpacing = 1.sp,

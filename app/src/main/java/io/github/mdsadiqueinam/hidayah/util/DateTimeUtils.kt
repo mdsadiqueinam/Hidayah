@@ -52,8 +52,18 @@ object DateTimeUtils {
     fun formatDuration(millis: Long): String {
         val hours = TimeUnit.MILLISECONDS.toHours(millis)
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % MINUTES_PER_HOUR
-        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+        var formatted = ""
+        if (hours == 0L && minutes == 0L) return "0m"
+        if (hours > 0) formatted = "${hours}h"
+        if (minutes > 0) formatted = "$formatted ${minutes}m"
+
+        return formatted.trim()
     }
+
+    /**
+     * Formats a minutes to a human-readable string like "2h 30m" or "45m".
+     */
+    fun formatMinutes(minutes: Int): String = formatDuration(minutes * 60000L)
 
     /**
      * Parses a pause duration string like "10m" or "2h" into milliseconds.

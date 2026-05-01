@@ -103,13 +103,13 @@ class HomeViewModel @Inject constructor(
             .onEach { config ->
                 if (config != null) {
                     shieldConfig = config
-                    _uiState.update {
-                        it.copy(
-                            isProtectionActive = config.isProtectionActive,
-                            selectedPauseDuration = config.selectedPauseDuration,
-                            screenTimeLimitMs = config.screenTimeLimit
-                        )
-                    }
+                }
+                _uiState.update {
+                    it.copy(
+                        isProtectionActive = shieldConfig.isProtectionActive,
+                        selectedPauseDuration = shieldConfig.selectedPauseDuration,
+                        screenTimeLimitMs = shieldConfig.screenTimeLimit
+                    )
                 }
             }
             .launchIn(viewModelScope)
